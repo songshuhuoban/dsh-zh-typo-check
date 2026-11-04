@@ -56,3 +56,7 @@ for (const file of DATA_FILES) {
   fs.copyFileSync(path.join(root, 'data', file), path.join(root, 'bundle', 'data', file))
 }
 console.log(`build-client: bundle/data/{${DATA_FILES.join(',')}} <- data/`)
+
+// 发布包的 README 用面向使用者的那一份
+fs.copyFileSync(path.join(root, 'README.md'), path.join(root, 'bundle', 'README.md'))
+console.log('build-client: bundle/README.md <- README.md')

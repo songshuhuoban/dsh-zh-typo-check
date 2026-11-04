@@ -1,9 +1,27 @@
 {
-  "name": "@local/zh-typo-check",
-  "version": "0.2.0",
-  "private": true,
+  "name": "dsh-zh-typo-check",
+  "version": "0.1.0",
+  "description": "中文错别字与半角标点检查，用于 DSH 输入框。规则即时生效，语义错由可下载的本地模型补上。",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "chinese",
+    "cjk",
+    "typo",
+    "spellcheck",
+    "proofreading"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/songshuhuoban/dsh-zh-typo-check.git"
+  },
+  "homepage": "https://github.com/songshuhuoban/dsh-zh-typo-check#readme",
+  "bugs": {
+    "url": "https://github.com/songshuhuoban/dsh-zh-typo-check/issues"
+  },
   "type": "module",
-  "description": "Chinese typo and half-width punctuation check for the DSH composer",
+  "main": "index.js",
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
@@ -12,12 +30,19 @@
   },
   "files": [
     "index.js",
-    "infer.mjs",
-    "tokenizer.mjs",
     "client.js",
+    "core.mjs",
+    "tokenizer.mjs",
+    "infer.mjs",
+    "lexicon.mjs",
+    "l1.mjs",
+    "checker.mjs",
+    "data/*.txt",
     "cordis.patch.yml",
     "locale/*.json",
-    "icon.svg"
+    "icon.svg",
+    "LICENSE",
+    "README.md"
   ],
   "dependencies": {
     "onnxruntime-node": "^1.30.0"
@@ -29,9 +54,7 @@
     "client": {
       "platform": "web",
       "immediately": true,
-      "inject": [
-        "@deepseek-ai/dsh-client-ui-conversation"
-      ]
+      "inject": ["@deepseek-ai/dsh-client-ui-conversation"]
     }
   }
 }
