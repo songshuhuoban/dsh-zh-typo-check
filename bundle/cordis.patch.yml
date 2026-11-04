@@ -1,0 +1,3 @@
+- insert:
+    - id: zh-typo-check
+      name: '@local/zh-typo-check'

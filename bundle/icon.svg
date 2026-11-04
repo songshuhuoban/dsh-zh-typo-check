@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Chinese typo check">
+  <rect width="48" height="48" rx="12" fill="#2f5fe0"/>
+  <g stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.94">
+    <path d="M13 13h22"/>
+    <path d="M13 21h15"/>
+    <path d="M32 21h3"/>
+    <path d="M13 29h10"/>
+  </g>
+  <path d="M24 29h11" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+  <path d="M8 38.5q2.6-3.4 5.2 0t5.2 0t5.2 0t5.2 0t5.2 0t5.2 0" fill="none" stroke="#ffbe3d" stroke-width="2.6" stroke-linecap="round"/>
+</svg>

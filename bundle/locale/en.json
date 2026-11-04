@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Chinese typo check",
+    "description": "Marks Chinese typos and half-width punctuation in the composer; hover to replace."
+  }
+}

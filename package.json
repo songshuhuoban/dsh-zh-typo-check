@@ -1,0 +1,29 @@
+{
+  "name": "dsh-zh-typo-check",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DSH 输入框中文词语检查：判定内核 + 客户端插件",
+  "scripts": {
+    "build": "node tools/build-client.mjs",
+    "test": "node src/editor.test.mjs && node src/demo.mjs && node src/adversarial.mjs",
+    "demo": "node src/demo.mjs",
+    "adversarial": "node src/adversarial.mjs",
+    "bench": "node src/bench.mjs",
+    "timing": "node tools/build-client.mjs && node --check bundle/client.js",
+    "l1:data": "node tools/build-l1-data.mjs",
+    "l1:eval": "node tools/eval.mjs all",
+    "l1:detail": "node tools/eval-detail.mjs dev",
+    "l2:eval": "node tools/eval-mlm.mjs all",
+    "model:test": "node tools/model-service-test.mjs",
+    "host:eval": "node tools/host-eval.mjs all",
+    "resilience": "node tools/plugin-resilience-test.mjs",
+    "infer:test": "node tools/tokenizer-test.mjs && node tools/infer-test.mjs && node tools/infer-route-test.mjs",
+    "model:research": "node tools/hf-detail.mjs && node tools/hf-small-survey.mjs"
+  },
+  "devDependencies": {
+    "@huggingface/transformers": "^4.3.2",
+    "pinyin-pro": "^3.29.5",
+    "segmentit": "^2.0.3"
+  }
+}
