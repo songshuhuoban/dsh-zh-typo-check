@@ -94,9 +94,14 @@ node tools/host-eval.mjs all           # 产品路径的精确率 / 召回率
 ## 发布
 
 ```bash
-node tools/build-client.mjs
-cp README.md bundle/README.md
-cd bundle && npm publish
+node tools/build-client.mjs     # 会顺带把 README.md 同步到 bundle/
+cd bundle
+npm publish --access public
 ```
+
+**为什么从 `bundle/` 发布而不是仓库根**：DSH 把包根当作插件根——入口 `index.js`、
+`cordis.patch.yml`、client 导出、locale、图标全都相对同一个目录解析。把 patch 放根、
+代码放 `bundle/` 试过，加载器会去 `bundle/bundle` 或 `<包根>/index.js` 找入口，装不上。
+仓库根只是开发工作区（`private: true`），`bundle/package.json` 才是 npm 清单。
 
 `bundle/package.json` 里的 `files` 决定包里有什么；`bundle/data/` 里那 1.9 MB 词表是必需的。

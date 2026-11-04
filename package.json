@@ -1,16 +1,15 @@
 {
-  "name": "dsh-zh-typo-check",
+  "name": "dsh-zh-typo-check-dev",
   "version": "0.1.0",
   "private": true,
+  "description": "开发工作区：源码、语料、评估脚本。发布包在 bundle/，见 CONTRIBUTING.md。",
   "type": "module",
-  "description": "DSH 输入框中文词语检查：判定内核 + 客户端插件",
   "scripts": {
     "build": "node tools/build-client.mjs",
     "test": "node src/editor.test.mjs && node src/demo.mjs && node src/adversarial.mjs",
     "demo": "node src/demo.mjs",
     "adversarial": "node src/adversarial.mjs",
     "bench": "node src/bench.mjs",
-    "timing": "node tools/build-client.mjs && node --check bundle/client.js",
     "l1:data": "node tools/build-l1-data.mjs",
     "l1:eval": "node tools/eval.mjs all",
     "l1:detail": "node tools/eval-detail.mjs dev",
