@@ -75,6 +75,9 @@ window.__ModuleLoader__.load({
         title: '中文检查',
         replace: '替换',
         ignore: '忽略',
+    fluencyBody: '这句话读起来不太通顺。模型对整句的把握偏低，可能有表达或语病问题——这只是提示，不做替换。',
+    optFluencyLabel: '整句通顺度（实验）',
+    optFluencyHint: '没有具体错字、但整句读起来别扭时提醒一句。专业术语和人名可能误报。',
 
         sectionIntro: '在输入框里标出中文错别字和半角标点。本地规则永远可用；装上模型后，语义层面的误判也会被挡掉。',
         options: '检查设置',
@@ -127,6 +130,9 @@ window.__ModuleLoader__.load({
         title: 'Chinese check',
         replace: 'Replace',
         ignore: 'Ignore',
+    fluencyBody: 'This sentence reads awkwardly. The model is unsure about the whole line — a hint only, nothing is replaced.',
+    optFluencyLabel: 'Sentence fluency (experimental)',
+    optFluencyHint: 'A one-line note when the whole sentence reads oddly even though no single character is wrong. Jargon and names may trigger it.',
 
         sectionIntro: 'Flags Chinese typos and half-width punctuation in the composer. The rule engine always works; with the model installed, semantic mistakes are caught too.',
         options: 'Checking options',
@@ -197,6 +203,8 @@ window.__ModuleLoader__.load({
       enabled: true,
       punctuation: true,
       model: true,
+      // 实验功能：整句通顺度提示（模型对原文每个字的平均把握偏低时提醒），默认关闭
+      fluency: false,
       sensitivity: 'normal',
       source: 'auto',
       customBase: '',
@@ -323,6 +331,7 @@ window.__ModuleLoader__.load({
     const ignoreKey = (issue) => {
         if (issue.kind === 'punct') return 'punct:' + issue.start + ':' + issue.text
         if (issue.kind === 'model') return 'model:' + issue.context
+        if (issue.kind === 'fluency') return 'fluency:' + issue.context
         return issue.text
       }
 
@@ -337,14 +346,31 @@ window.__ModuleLoader__.load({
      * Returns null whenever nothing can be shown safely (no editor, mid-IME,
      * chip present, or the DOM disagrees with the draft).
      */
-    function computeView(draft, rev, found, ignored, wave, stamp) {
+    function computeView(draft, rev, found, ignored, wave, stamp, fluency) {
       if (typeof draft !== 'string' || draft === '') return null
       const root = document.querySelector('[data-composer-input]')
       if (root === null) return null
       // Never fight the IME: a composing draft is not yet what the user meant.
       if (root.hasAttribute('data-composer-composing') || root.closest('[data-composer-composing]') !== null) return null
       const issues = found.filter((issue) => !ignored.has(ignoreKey(issue)))
-      if (issues.length === 0) return null
+      // 没有任何具体错字时才提通顺度：两个提示叠在一起会互相抢注意力，
+      // 而且错字是确定性的，优先给它。
+      const sentenceLevel = issues.length === 0 && fluency !== null && fluency !== undefined
+        && !ignored.has('fluency:' + draft)
+      if (issues.length === 0 && !sentenceLevel) return null
+      if (sentenceLevel) {
+        issues.push({
+          start: 0,
+          end: Math.max(1, draft.length),
+          kind: 'fluency',
+          text: draft,
+          // 忽略按整句记：这是"这句别提醒我"，不是"这个字别管"
+          context: draft,
+          message: 'fluencyBody',
+          suggestions: [],
+          sentence: true,
+        })
+      }
       const index = buildIndex(root)
       // A chip (file reference) makes the DOM text and the draft text diverge.
       // Trust the region before the first difference rather than going dark.
@@ -357,9 +383,24 @@ window.__ModuleLoader__.load({
       }
       if (usable === 0) return null
       const marks = []
-      for (let i = 0; i < issues.length; i += 1) {
-        if (issues[i].end > usable) continue
-        for (const rect of rangeRects(index, issues[i].start, issues[i].end)) marks.push({ ...rect, index: i })
+      if (sentenceLevel) {
+        // 整句提示：一条贯穿可见文本的虚线，不指向具体某个字。
+        let left = Number.POSITIVE_INFINITY
+        let right = Number.NEGATIVE_INFINITY
+        let bottom = 0
+        for (const rect of rangeRects(index, 0, usable)) {
+          if (rect.left < left) left = rect.left
+          if (rect.left + rect.width > right) right = rect.left + rect.width
+          if (rect.top + rect.height > bottom) bottom = rect.top + rect.height
+        }
+        if (Number.isFinite(left) && right > left) {
+          marks.push({ left, top: bottom, height: 0, width: right - left, index: 0, sentence: true })
+        }
+      } else {
+        for (let i = 0; i < issues.length; i += 1) {
+          if (issues[i].end > usable) continue
+          for (const rect of rangeRects(index, issues[i].start, issues[i].end)) marks.push({ ...rect, index: i })
+        }
       }
       if (marks.length === 0) return null
       return { text: draft, rev, issues, marks, wave, stamp }
@@ -469,17 +510,21 @@ window.__ModuleLoader__.load({
           if (!prefs.punctuation) found = found.filter((issue) => issue.kind !== 'punct')
           // 规则先出结果，模型的结果到了再补一次——两者都不阻塞输入。
           let fromModel = []
+          let fromFluency = null
           if (prefs.model) {
-            if (modelRef.current.text === text) fromModel = modelRef.current.issues
-            else if (modelCacheRef.current.has(text)) fromModel = modelCacheRef.current.get(text)
+            const record = modelRef.current.text === text ? modelRef.current : modelCacheRef.current.get(text)
+            if (record !== undefined) {
+              fromModel = record.issues
+              fromFluency = prefs.fluency && record.fluency?.low === true ? record.fluency : null
+            }
           }
           const merged = mergeModelIssues(found, fromModel, text)
-          next = computeView(text, draftRev, merged, ignoredRef.current, waveRef.current, ignoredRev + ':' + modelVersion)
+          next = computeView(text, draftRev, merged, ignoredRef.current, waveRef.current, ignoredRev + ':' + modelVersion, fromFluency)
         }
         setView((previous) => (sameView(previous, next) ? previous : next))
         setActive(null)
         // 偏好参与渲染结果，必须进依赖：关掉标点检查后要立刻生效
-      }, [draft, draftRev, ignoredRev, modelVersion, prefs.enabled, prefs.punctuation, prefs.model])
+      }, [draft, draftRev, ignoredRev, modelVersion, prefs.enabled, prefs.punctuation, prefs.model, prefs.fluency])
 
       /**
        * 模型检查：停手 400 ms 后问一次宿主。
@@ -523,8 +568,9 @@ window.__ModuleLoader__.load({
                 requestedRef.current = ''
                 return
               }
-              modelRef.current = { text: draft, issues: body.issues }
-              modelCacheRef.current.set(draft, body.issues)
+              const record = { text: draft, issues: body.issues, fluency: body.fluency ?? null }
+              modelRef.current = record
+              modelCacheRef.current.set(draft, record)
               if (inflightRef.current === controller) inflightRef.current = null
               if (modelCacheRef.current.size > CACHE_LIMIT) {
                 modelCacheRef.current.delete(modelCacheRef.current.keys().next().value)
@@ -672,7 +718,7 @@ window.__ModuleLoader__.load({
 
       const ignore = React.useCallback((issue) => {
         ignoredRef.current.add(ignoreKey(issue))
-        if (issue.kind !== 'punct') saveIgnored(ignoredRef.current)
+        if (issue.kind !== 'punct' && issue.kind !== 'fluency') saveIgnored(ignoredRef.current)
         setActive(null)
         bumpIgnored()
       }, [])
@@ -695,14 +741,19 @@ window.__ModuleLoader__.load({
             top: (mark.top + mark.height - 3) + 'px',
             width: mark.width + 'px',
             height: '3px',
-            backgroundImage: view.wave,
+            backgroundImage: mark.sentence === true ? 'none' : view.wave,
+            borderBottom: mark.sentence === true ? '2px dashed rgba(37, 99, 235, 0.55)' : 'none',
             backgroundRepeat: 'repeat-x',
             backgroundPosition: 'left bottom',
             // 纯装饰：命中判定由 document 的 mousemove 做，这里不接收任何指针事件
             pointerEvents: 'none',
           },
         })),
-        activeIssue === null ? null : bubble(active, activeIssue, t, {
+        activeIssue === null ? null : activeIssue.sentence === true ? sentenceBubble(active, t, {
+          onIgnore: () => ignore(activeIssue),
+          onEnter: () => window.clearTimeout(hideTimer.current),
+          onLeave: hideSoon,
+        }) : bubble(active, activeIssue, t, {
           onApply: () => applyFix(activeIssue),
           onIgnore: () => ignore(activeIssue),
           // 指针进气泡时先别关；真要不要关由 measure 量矩形决定
@@ -788,6 +839,57 @@ window.__ModuleLoader__.load({
     }
 
     /** 气泡里的按钮跟着白底走，不复用主题色，免得又出现底色和字色打架。 */
+    /**
+     * 整句提示的气泡：没有"换成什么字"，只有解释和忽略。
+     * 与逐字气泡分开写，避免在同一个函数里堆两套完全不同的内容。
+     */
+    function sentenceBubble(active, t, handlers) {
+      const anchor = active.anchor
+      const width = 260
+      const center = anchor.left + anchor.width / 2
+      const left = Math.min(Math.max(8, center - width / 2), window.innerWidth - width - 8)
+      const above = anchor.top > 96
+      const top = above ? anchor.top - 10 : anchor.top + anchor.height + 10
+      return React.createElement('div', {
+        key: 'sentence-bubble',
+        'data-zh-typo-bubble': '',
+        style: {
+          position: 'fixed',
+          left: left + 'px',
+          top: top + 'px',
+          transform: above ? 'translateY(-100%)' : 'none',
+          width: width + 'px',
+          boxSizing: 'border-box',
+          pointerEvents: 'auto',
+          background: '#ffffff',
+          color: '#1f2329',
+          border: '1px solid rgba(0,0,0,0.08)',
+          borderRadius: '10px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+          padding: '10px 12px',
+          font: '13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif',
+        },
+        onMouseEnter: handlers.onEnter,
+        onMouseLeave: handlers.onLeave,
+      }, [
+        React.createElement('div', {
+          key: 'body',
+          style: { marginBottom: '8px' },
+        }, t('fluencyBody')),
+        React.createElement('div', {
+          key: 'actions',
+          style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' },
+        }, [
+          React.createElement('button', {
+            key: 'ignore',
+            type: 'button',
+            onMouseDown: (event) => event.preventDefault(),
+            onClick: handlers.onIgnore,
+            style: bubbleButtonStyle(false),
+          }, t('ignore')),
+        ]),
+      ])
+    }
     function bubbleButtonStyle(primary) {
       return {
         appearance: 'none',
@@ -1033,7 +1135,9 @@ window.__ModuleLoader__.load({
                 onClick: () => settingsStore.set({ sensitivity: level }),
                 style: segmentStyle(prefs.sensitivity === level),
               }, t(level === 'low' ? 'sensLow' : level === 'high' ? 'sensHigh' : 'sensNormal'))))),
-          prefRow('source', t('optSourceLabel'), t('optSourceHint'),
+          prefRow('fluency', t('optFluencyLabel'), t('optFluencyHint'), toggleControl(t, prefs.fluency, () => {
+            settingsStore.set({ fluency: !prefs.fluency })
+          })),          prefRow('source', t('optSourceLabel'), t('optSourceHint'),
             React.createElement('div', { key: 'seg', style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
               ['auto', 'mirror', 'official', 'custom'].map((level) => React.createElement('button', {
                 key: level,

@@ -29,6 +29,9 @@ export const MAX_POSITIONS = Number(process.env.MAX_POSITIONS ?? 12)
  * @param {object} model   openModel() 的返回值
  * @param {object|null} lexicon  词表；为 null 时 B 路不设"像话"约束
  * @param {string} text
+ * @param {object} [options]
+ * @param {number} [options.minDelta]  覆盖 B 路阈值
+ * @param {number[]} [options.scores]  传入数组时，把每个已打分位置的「原字得分」追加进去
  * @returns {Promise<Array<{index:number, original:string, candidate:string, delta:number, route:'A'|'B'}>>}
  */
 export async function checkText(model, lexicon, text, options = {}) {
@@ -77,7 +80,11 @@ export async function checkText(model, lexicon, text, options = {}) {
   const scored = new Map()
   for (const index of union) {
     if (index < 0 || index >= text.length) continue
-    scored.set(index, await scoreIndex(model, ids, index, { topK: 40 }))
+    const row = await scoreIndex(model, ids, index, { topK: 40 })
+    scored.set(index, row)
+    // 顺带把「模型对原文这个字的评分」交出去：通顺度就是这些分数的平均，
+    // 不需要再跑第二轮推理。
+    if (Array.isArray(options.scores)) options.scores.push(row.original)
   }
 
   const results = []

@@ -404,6 +404,33 @@ async function serveFile(request) {
   })
 }
 
+/** 通顺度阈值：低于它认为整句读起来别扭。语料上正常句最低 14.1，有错句低至 5。 */
+const FLUENCY_THRESHOLD = Number(process.env.FLUENCY_THRESHOLD ?? 12.5)
+
+/**
+ * 把逐字得分收成一句通顺度。
+ *
+ * 每个分数是「模型对原文这个字的评分」——越负说明模型越没料到这个字。
+ * 取平均比取最低稳：单个专有名词会拉低最低分，但拉不动平均。
+ */
+function summarizeFluency(scores) {
+  if (!Array.isArray(scores) || scores.length === 0) return null
+  let sum = 0
+  let min = Number.POSITIVE_INFINITY
+  for (const score of scores) {
+    sum += score
+    if (score < min) min = score
+  }
+  const avg = sum / scores.length
+  return {
+    avg: Number(avg.toFixed(2)),
+    min: Number(min.toFixed(2)),
+    samples: scores.length,
+    threshold: FLUENCY_THRESHOLD,
+    low: avg < FLUENCY_THRESHOLD,
+  }
+}
+
 /** The single resource answering every /zh-typo-model/ request. */
 async function resource(request) {
   const url = new URL(request.url)
@@ -524,14 +551,21 @@ async function resource(request) {
       const { aligned } = encode(model, text)
       const startedAt = Date.now()
       // 同一句 + 同一阈值只算一次：模型的推理是串行的，重复请求只会互相排队。
+      // 结果里同时带着每个打分位置的「原字得分」，通顺度就用它们算，不额外推理。
       const cacheKey = text + '\u0000' + String(delta)
       let pending = inflightChecks.get(cacheKey)
       if (pending === undefined) {
-        pending = checkText(model, lexicon, text, { minDelta: Number.isFinite(delta) ? delta : undefined })
+        const collected = []
+        pending = checkText(model, lexicon, text, {
+          minDelta: Number.isFinite(delta) ? delta : undefined,
+          scores: collected,
+        })
+          .then((issues) => ({ issues, scores: collected }))
           .finally(() => { inflightChecks.delete(cacheKey) })
         inflightChecks.set(cacheKey, pending)
       }
-      const issues = await pending
+      const { issues, scores } = await pending
+      const fluency = summarizeFluency(scores)
       lastCheck = { at: Date.now(), chars, issues: issues.length, threshold: Number.isFinite(delta) ? delta : null, head: text.slice(0, 24) }
       return json({
         state: 'ready',
@@ -541,6 +575,7 @@ async function resource(request) {
         ms: Date.now() - startedAt,
         reason: aligned ? 'checked' : 'not-aligned',
         threshold: Number.isFinite(delta) ? delta : null,
+        fluency,
       })
     } catch (error) {
       const missing = error?.code === 'E_ORT_MISSING'

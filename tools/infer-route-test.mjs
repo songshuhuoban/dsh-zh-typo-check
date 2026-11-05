@@ -14,7 +14,6 @@ const tmp = path.join(root, '.tmp-infer-test')
 const models = path.join(tmp, 'models', 'zh-typo-check')
 const cache = path.join(root, 'node_modules/@huggingface/transformers/.cache/Xenova/macbert4csc-base-chinese')
 
-await fsp.rm(tmp, { recursive: true, force: true })
 await fsp.mkdir(models, { recursive: true })
 fs.linkSync(path.join(cache, 'tokenizer.json'), path.join(models, 'tokenizer.json'))
 fs.linkSync(path.join(cache, 'onnx', 'model_quantized.onnx'), path.join(models, 'model_quantized.onnx'))
@@ -131,6 +130,18 @@ check('并发结果与单次一致',
   burst.every((r) => JSON.stringify(r.body.issues) === JSON.stringify(single.body.issues)),
   JSON.stringify(burst.map((r) => r.body.issues.length)))
 check('并发请求被合并（不到串行的两倍）', concMs < singleMs * 2, `${concMs} vs ${singleMs}`)
+
+// 通顺度：复用逐字打分，正常句显著高于乱敲句
+const fluencyOf = async (text) => {
+  const r = await call('check?text=' + encodeURIComponent(text) + '&delta=12')
+  return r.body.fluency
+}
+const normal = await fluencyOf('今天的天气不错，我们去公园走走吧。')
+const garbled = await fluencyOf('第五个i红啊数据库更好')
+console.log(`  正常 ${normal?.avg}，乱敲 ${garbled?.avg}（阈值 ${normal?.threshold}）`)
+check('正常句不被判为不通顺', normal !== null && normal.low === false, String(normal?.avg))
+check('乱敲句被判为不通顺', garbled !== null && garbled.low === true, String(garbled?.avg))
+check('通顺度来自已有打分（有采样数）', normal !== null && normal.samples > 0, String(normal?.samples))
 await fsp.rm(tmp, { recursive: true, force: true })
 console.log(`\n${failed.length === 0 ? '全部通过' : `${failed.length} 项失败：${failed.join('、')}`}`)
 process.exit(failed.length === 0 ? 0 : 1)
