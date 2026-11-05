@@ -443,7 +443,6 @@ window.__ModuleLoader__.load({
       const modelRef = React.useRef({ text: '', issues: [] })
       /** 已经发过请求的文本，防止停止输入后每帧都打一次。 */
       const requestedRef = React.useRef('')
-      const beaconViewRef = React.useRef(-1)
       /** 在途的模型请求：同一时刻只留一个，新的开始就把旧的掐掉，别让宿主排队。 */
       const inflightRef = React.useRef(null)
       /** 模型结果的按文本缓存：来回修改同一段文字时不必重问，也不会丢结果。 */
@@ -476,11 +475,6 @@ window.__ModuleLoader__.load({
           }
           const merged = mergeModelIssues(found, fromModel, text)
           next = computeView(text, draftRev, merged, ignoredRef.current, waveRef.current, ignoredRev + ':' + modelVersion)
-        }
-        if (beaconViewRef.current !== modelVersion) {
-          beaconViewRef.current = modelVersion
-          beacon('view: text=' + text.length + ' issues=' + (next === null ? 'null' : next.issues.length)
-            + ' marks=' + (next === null ? 0 : next.marks.length) + ' ignored=' + ignoredRef.current.size)
         }
         setView((previous) => (sameView(previous, next) ? previous : next))
         setActive(null)
@@ -523,7 +517,6 @@ window.__ModuleLoader__.load({
                 : [body.reason, body.chars !== undefined ? body.chars + ' 字' : '', body.aligned === false ? '分词未对齐' : '']
                   .filter((part) => typeof part === 'string' && part !== '').join(' · ')
               checkLogStore.set({ state, issues, ms: elapsed, at: Date.now(), detail: body?.error ? body.error : detail })
-              beacon('model reply: state=' + state + ' chars=' + (body?.chars ?? '?') + ' issues=' + issues + ' ms=' + elapsed + (body?.reason ? ' reason=' + body.reason : ''))
               if (body === null || body.state !== 'ready' || !Array.isArray(body.issues)) {
                 // 这一次没成，下次文本再变还有机会——但不能把这句永久钉死成"查过了"。
                 // 早先这里不重置，模型晚装好之后同一句话再也不会被查。
