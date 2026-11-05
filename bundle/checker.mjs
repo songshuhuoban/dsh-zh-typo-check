@@ -23,7 +23,7 @@ export const B_MARGIN = Number(process.env.B_MARGIN ?? 12)
  * 真正该报的不同音替换会给出高得多的分数（`的还`→`的话`，Δ=18.0）。
  */
 export const B_MARGIN_OTHER = Number(process.env.B_MARGIN_OTHER ?? 15)
-export const MAX_POSITIONS = Number(process.env.MAX_POSITIONS ?? 7)
+export const MAX_POSITIONS = Number(process.env.MAX_POSITIONS ?? 12)
 
 /**
  * @param {object} model   openModel() 的返回值
