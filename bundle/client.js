@@ -570,11 +570,21 @@ window.__ModuleLoader__.load({
     }
     // ---- end checker core ----
 
+    /**
+     * 诊断打点：把客户端发生的事写到宿主日志里。
+     *
+     * 放在工厂作用域，apply 和组件里都能用——之前在 apply 里定义成局部常量，
+     * 组件里调用就抛 ReferenceError，而它恰好写在模型结果处理的 .then 里，
+     * 异常被 .catch 吞掉，表现为"宿主答了、界面永远不画"。
+     */
+    function beacon(message) {
+      try {
+        void fetch('/zh-typo-model/log?msg=' + encodeURIComponent(String(message))).catch(() => {})
+      } catch { /* 诊断不能影响功能 */ }
+    }
+
     // 模块一被求值就打点：没有这条日志 = 客户端模块压根没加载
-    try {
-      void fetch('/zh-typo-model/log?msg=' + encodeURIComponent('factory evaluated, href=' + location.pathname))
-        .catch(() => {})
-    } catch { /* 诊断不能影响加载 */ }
+    beacon('factory evaluated, href=' + location.pathname)
 
     const NS = 'zh-typo-check'
     const MIN_CONFIDENCE = 0.9
