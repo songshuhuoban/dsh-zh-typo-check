@@ -1,0 +1,8 @@
+- LICENSE   1065
+- README.i18n.yaml   1809
+- README.md   19030
+- README.zh.md   18736
+d lib
+d locale
+d node_modules
+- package.json   3303
