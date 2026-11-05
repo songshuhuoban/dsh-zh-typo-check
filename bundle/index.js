@@ -324,6 +324,9 @@ function json(body, status = 200) {
 /** 一次检查最多看这么多字：输入框里再长也该靠规则兜底，不该让模型拖着。 */
 const MAX_CHECK_CHARS = 500
 
+/** 在途的相同检查请求：同一句话被连发多次时共用一次推理。 */
+const inflightChecks = new Map()
+
 /** 最近一次 check 请求，用于判断客户端到底有没有在提问。 */
 let lastCheck = null
 
@@ -520,7 +523,15 @@ async function resource(request) {
       const delta = rawDelta === null ? Number.NaN : Number(rawDelta)
       const { aligned } = encode(model, text)
       const startedAt = Date.now()
-      const issues = await checkText(model, lexicon, text, { minDelta: Number.isFinite(delta) ? delta : undefined })
+      // 同一句 + 同一阈值只算一次：模型的推理是串行的，重复请求只会互相排队。
+      const cacheKey = text + '\u0000' + String(delta)
+      let pending = inflightChecks.get(cacheKey)
+      if (pending === undefined) {
+        pending = checkText(model, lexicon, text, { minDelta: Number.isFinite(delta) ? delta : undefined })
+          .finally(() => { inflightChecks.delete(cacheKey) })
+        inflightChecks.set(cacheKey, pending)
+      }
+      const issues = await pending
       lastCheck = { at: Date.now(), chars, issues: issues.length, threshold: Number.isFinite(delta) ? delta : null, head: text.slice(0, 24) }
       return json({
         state: 'ready',

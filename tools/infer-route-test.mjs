@@ -117,6 +117,20 @@ check('灵敏度调低仍会报', loose.body.issues.some((i) => i.original === '
 // 不带 delta 参数时必须用默认阈值，不能被 Number(null)=0 带偏
 const dflt = await call('check?text=' + encodeURIComponent('他弟弟长得很象他。'))
 check('缺省 delta 走默认阈值', dflt.body.issues.some((i) => i.original === '象'), JSON.stringify(dflt.body.issues))
+
+// 并发相同请求应共用一次推理（否则宿主会排队，最新的一句反而最晚回来）
+const dupUrl = 'check?text=' + encodeURIComponent('这个方案的风显太高了，我们可以再想想。') + '&delta=12'
+const singleTick = Date.now()
+const single = await call(dupUrl)
+const singleMs = Date.now() - singleTick
+const concTick = Date.now()
+const burst = await Promise.all([call(dupUrl), call(dupUrl), call(dupUrl)])
+const concMs = Date.now() - concTick
+console.log(`  单次 ${singleMs} ms，并发 3 次共 ${concMs} ms`)
+check('并发结果与单次一致',
+  burst.every((r) => JSON.stringify(r.body.issues) === JSON.stringify(single.body.issues)),
+  JSON.stringify(burst.map((r) => r.body.issues.length)))
+check('并发请求被合并（不到串行的两倍）', concMs < singleMs * 2, `${concMs} vs ${singleMs}`)
 await fsp.rm(tmp, { recursive: true, force: true })
 console.log(`\n${failed.length === 0 ? '全部通过' : `${failed.length} 项失败：${failed.join('、')}`}`)
 process.exit(failed.length === 0 ? 0 : 1)

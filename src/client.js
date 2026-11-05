@@ -434,6 +434,8 @@ window.__ModuleLoader__.load({
       /** 已经发过请求的文本，防止停止输入后每帧都打一次。 */
       const requestedRef = React.useRef('')
       const beaconViewRef = React.useRef(-1)
+      /** 在途的模型请求：同一时刻只留一个，新的开始就把旧的掐掉，别让宿主排队。 */
+      const inflightRef = React.useRef(null)
       /** 模型结果的按文本缓存：来回修改同一段文字时不必重问，也不会丢结果。 */
       const modelCacheRef = React.useRef(new Map())
       const hideTimer = React.useRef(0)
@@ -492,9 +494,15 @@ window.__ModuleLoader__.load({
         const timer = window.setTimeout(() => {
           const startedAt = Date.now()
           requestedRef.current = requestKey
+          if (inflightRef.current !== null) {
+            try { inflightRef.current.abort() } catch { /* ignore */ }
+            inflightRef.current = null
+          }
+          const controller = new AbortController()
+          inflightRef.current = controller
           const url = MODEL_ENDPOINT + 'check?text=' + encodeURIComponent(draft)
             + '&delta=' + SENSITIVITY[prefs.sensitivity]
-          fetch(url, { cache: 'no-store' })
+          fetch(url, { cache: 'no-store', signal: controller.signal })
             .then((response) => (response.ok ? response.json() : null))
             .then((body) => {
               const elapsed = Date.now() - startedAt
@@ -514,12 +522,14 @@ window.__ModuleLoader__.load({
               }
               modelRef.current = { text: draft, issues: body.issues }
               modelCacheRef.current.set(draft, body.issues)
+              if (inflightRef.current === controller) inflightRef.current = null
               if (modelCacheRef.current.size > CACHE_LIMIT) {
                 modelCacheRef.current.delete(modelCacheRef.current.keys().next().value)
               }
               setModelVersion((n) => n + 1)
             })
             .catch((failure) => {
+              if (failure?.name === 'AbortError') return
               requestedRef.current = ''
               checkLogStore.set({
                 state: 'HTTP 不可用',
