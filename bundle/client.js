@@ -1002,17 +1002,39 @@ window.__ModuleLoader__.load({
       if (usable === 0) return null
       const marks = []
       if (sentenceLevel) {
-        // 整句提示：一条贯穿可见文本的虚线，不指向具体某个字。
-        let left = Number.POSITIVE_INFINITY
-        let right = Number.NEGATIVE_INFINITY
-        let bottom = 0
+        // 整句提示：按「视觉行」切段。每段同时带着整行的矩形——
+        // 命中判定读的是 top/height，所以要覆盖整行文字，不能只留一条线，
+        // 否则必须精准指到那条虚线才弹提示。
+        const rows = new Map()
         for (const rect of rangeRects(index, 0, usable)) {
-          if (rect.left < left) left = rect.left
-          if (rect.left + rect.width > right) right = rect.left + rect.width
-          if (rect.top + rect.height > bottom) bottom = rect.top + rect.height
+          const key = Math.round(rect.top)
+          const seen = rows.get(key)
+          if (seen === undefined) {
+            rows.set(key, {
+              left: rect.left,
+              right: rect.left + rect.width,
+              top: rect.top,
+              bottom: rect.top + rect.height,
+            })
+          } else {
+            seen.left = Math.min(seen.left, rect.left)
+            seen.right = Math.max(seen.right, rect.left + rect.width)
+            seen.top = Math.min(seen.top, rect.top)
+            seen.bottom = Math.max(seen.bottom, rect.top + rect.height)
+          }
         }
-        if (Number.isFinite(left) && right > left) {
-          marks.push({ left, top: bottom, height: 0, width: right - left, index: 0, sentence: true })
+        for (const row of rows.values()) {
+          if (row.right <= row.left) continue
+          marks.push({
+            left: row.left,
+            top: row.top,
+            width: row.right - row.left,
+            height: row.bottom - row.top,
+            // 虚线画在行底，命中区域是整行文字
+            line: row.bottom,
+            index: 0,
+            sentence: true,
+          })
         }
       } else {
         for (let i = 0; i < issues.length; i += 1) {
@@ -1356,7 +1378,7 @@ window.__ModuleLoader__.load({
           style: {
             position: 'fixed',
             left: mark.left + 'px',
-            top: (mark.top + mark.height - 3) + 'px',
+            top: ((mark.sentence === true ? mark.line : mark.top + mark.height) - 3) + 'px',
             width: mark.width + 'px',
             height: '3px',
             backgroundImage: mark.sentence === true ? 'none' : view.wave,
