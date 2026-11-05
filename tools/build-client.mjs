@@ -33,6 +33,17 @@ const SPLICES = [
 const templatePath = path.join(root, 'src', 'client.js')
 let output = fs.readFileSync(templatePath, 'utf8')
 
+// 客户端模块的注册 id 必须等于包名，壳才找得到。手写会漂移，从清单里读。
+const manifest = JSON.parse(fs.readFileSync(path.join(outDir, '..', 'package.json'), 'utf8'))
+void manifest
+const bundleManifest = JSON.parse(fs.readFileSync(path.join(root, 'bundle', 'package.json'), 'utf8'))
+if (!output.includes("'__PACKAGE_NAME__'")) {
+  console.error('build-client: the client template lost its __PACKAGE_NAME__ placeholder')
+  process.exit(1)
+}
+output = output.replace("'__PACKAGE_NAME__'", JSON.stringify(bundleManifest.name))
+console.log(`build-client: client module id = ${bundleManifest.name}`)
+
 for (const [marker, code] of SPLICES) {
   if (!output.includes(marker)) {
     console.error(`build-client: marker ${marker.trim()} missing from src/client.js`)

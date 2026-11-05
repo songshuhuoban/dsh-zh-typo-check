@@ -324,6 +324,9 @@ function json(body, status = 200) {
 /** 一次检查最多看这么多字：输入框里再长也该靠规则兜底，不该让模型拖着。 */
 const MAX_CHECK_CHARS = 500
 
+/** 最近一次 check 请求，用于判断客户端到底有没有在提问。 */
+let lastCheck = null
+
 let cachedModel = null
 let cachedLexicon
 
@@ -407,7 +410,7 @@ async function resource(request) {
   // 所以下载与删除也走 GET，靠语义化路径区分。
   if (sub === 'status') {
     const { probeRuntime } = await inferModule().catch(() => ({ probeRuntime: async () => false }))
-    return json({ ...(await refreshFromDisk()), runtime: await probeRuntime().catch(() => false) })
+    return json({ ...(await refreshFromDisk()), runtime: await probeRuntime().catch(() => false), lastCheck })
   }
   if (sub === 'download') {
     if (current?.state === 'downloading') return json(current, 202)
@@ -422,7 +425,13 @@ async function resource(request) {
     void runDownload({ source, customBase })
     return json(current ?? freshState(), 202)
   }
-  if (sub === 'sources') {
+  if (sub === 'log') {
+    // 客户端模块加载时往这里打点：模块没加载就没有这条，
+    // 加载了但 apply 抛异常会带 error。两种失败因此可以区分。
+    const msg = url.searchParams.get('msg') ?? ''
+    bootLog(`[client] ${msg.slice(0, 400)}`)
+    return json({ ok: true })
+  }  if (sub === 'sources') {
     // 给设置页展示的候选线路（不含用户自己填的那条）
     return json({ automatic: 'auto', mirror: SOURCES.mirror, official: SOURCES.official })
   }
@@ -512,6 +521,7 @@ async function resource(request) {
       const { aligned } = encode(model, text)
       const startedAt = Date.now()
       const issues = await checkText(model, lexicon, text, { minDelta: Number.isFinite(delta) ? delta : undefined })
+      lastCheck = { at: Date.now(), chars, issues: issues.length, threshold: Number.isFinite(delta) ? delta : null, head: text.slice(0, 24) }
       return json({
         state: 'ready',
         issues,
@@ -553,10 +563,56 @@ export const inject = ['webServer']
  * 所以 apply() 每一步都留一行。排查宿主侧问题时把这段留着，代价只有几行代码。
  */
 function bootLog(line) {
+  // 同时写一份到固定位置，便于排查客户端加载问题
   try {
     const stamp = new Date().toISOString()
     fs.appendFileSync(path.join(os.tmpdir(), 'zh-typo-boot.log'), `${stamp}  ${line}\n`)
   } catch { /* 诊断日志本身不该影响加载 */ }
+}
+
+/** 插件在客户端的包名，用于查客户端模块表。 */
+const PACKAGE_NAME = 'dsh-zh-typo-check'
+
+/**
+ * 查一遍客户端模块表：我们的条目在不在、路径是什么、文件在不在。
+ *
+ * 页面上的下划线全部由客户端半边绘制，如果它没被装配进 boot graph，
+ * 界面就是"插件装着、但在跑"却什么都没发生。这段诊断就是回答那个问题的。
+ */
+function inspectClientEntry(ctx) {
+  try {
+    const service = typeof ctx.get === 'function' ? ctx.get('clientModules') : ctx.clientModules
+    if (service === undefined || service === null) {
+      bootLog('clientModules service unavailable')
+      return
+    }
+    const graph = typeof service.graph === 'function' ? service.graph() : null
+    const entry = graph?.entries?.find((item) => item.id === PACKAGE_NAME)
+    const clientPath = typeof service.clientPath === 'function' ? service.clientPath(PACKAGE_NAME) : undefined
+    let exists = false
+    try { exists = clientPath !== undefined && fs.existsSync(clientPath) } catch { /* ignore */ }
+    bootLog(`client graph: entries=${graph?.entries?.length ?? '?'} `
+      + `ours=${entry === undefined ? 'MISSING' : JSON.stringify(entry)} `
+      + `clientPath=${clientPath ?? 'undefined'} exists=${String(exists)}`)
+
+    // 取两条别人的 url 做对照，看我们的 `??` 是不是异常
+    const others = (graph?.entries ?? []).filter((item) => item.id !== PACKAGE_NAME).slice(0, 2)
+    bootLog(`client graph peers: ${JSON.stringify(others.map((item) => item.url))}`)
+
+    // 用宿主自己的 fetchBundle 真取一次：能取到就说明壳侧没问题，
+    // 取不到就说明是这条 bundle URL 的问题，而不是客户端代码的问题。
+    if (entry !== undefined && typeof service.fetchBundle === 'function') {
+      void service.fetchBundle(new Request('http://127.0.0.1/' + String(entry.url).replace(/^\/+/, '')))
+        .then(async (response) => {
+          let head = ''
+          try { head = (await response.text()).slice(0, 120).replace(/\s+/g, ' ') } catch { /* ignore */ }
+          bootLog(`fetchBundle status=${response.status} length=${response.headers.get('content-length') ?? '?'} head=${head}`)
+        })
+        .catch((error) => bootLog(`fetchBundle failed: ${error instanceof Error ? error.message : String(error)}`))
+    }
+  } catch (error) {
+    bootLog(`client graph inspect failed: ${error instanceof Error ? error.message : String(error)}`)
+  }
 }
 
 export function apply(ctx) {
@@ -578,6 +634,7 @@ export function apply(ctx) {
       }
     }, 'zh-typo-check: model routes')
     void refreshFromDisk()
+    inspectClientEntry(ctx)
     bootLog('apply done')
   } catch (error) {
     bootLog(`apply failed: ${error instanceof Error ? error.stack : String(error)}`)

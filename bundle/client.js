@@ -15,7 +15,10 @@
  * with no runtime imports beyond React.
  */
 window.__ModuleLoader__.load({
-  id: '@local/zh-typo-check',
+  // 必须与 package.json 的 name 完全一致：壳按包名找这个工厂，
+  // 名字对不上就是 "entry did not activate"，整个 web boot 会报错。
+  // 构建时由 tools/build-client.mjs 从 bundle/package.json 注入。
+  id: "dsh-zh-typo-check",
   factory(require) {
     const React = require('react')
     const ReactDOM = require('react-dom')
@@ -567,6 +570,12 @@ window.__ModuleLoader__.load({
     }
     // ---- end checker core ----
 
+    // 模块一被求值就打点：没有这条日志 = 客户端模块压根没加载
+    try {
+      void fetch('/zh-typo-model/log?msg=' + encodeURIComponent('factory evaluated, href=' + location.pathname))
+        .catch(() => {})
+    } catch { /* 诊断不能影响加载 */ }
+
     const NS = 'zh-typo-check'
     const MIN_CONFIDENCE = 0.9
     /** Above this many characters a synchronous pass stops being free; debounce it. */
@@ -1042,6 +1051,9 @@ window.__ModuleLoader__.load({
       const modelRef = React.useRef({ text: '', issues: [] })
       /** 已经发过请求的文本，防止停止输入后每帧都打一次。 */
       const requestedRef = React.useRef('')
+      const beaconViewRef = React.useRef(-1)
+      /** 模型结果的按文本缓存：来回修改同一段文字时不必重问，也不会丢结果。 */
+      const modelCacheRef = React.useRef(new Map())
       const hideTimer = React.useRef(0)
       const waveRef = React.useRef('')
       if (waveRef.current === '') waveRef.current = waveImage(resolveWaveColor())
@@ -1063,9 +1075,18 @@ window.__ModuleLoader__.load({
           }
           if (!prefs.punctuation) found = found.filter((issue) => issue.kind !== 'punct')
           // 规则先出结果，模型的结果到了再补一次——两者都不阻塞输入。
-          const fromModel = prefs.model && modelRef.current.text === text ? modelRef.current.issues : []
+          let fromModel = []
+          if (prefs.model) {
+            if (modelRef.current.text === text) fromModel = modelRef.current.issues
+            else if (modelCacheRef.current.has(text)) fromModel = modelCacheRef.current.get(text)
+          }
           const merged = mergeModelIssues(found, fromModel, text)
           next = computeView(text, draftRev, merged, ignoredRef.current, waveRef.current, ignoredRev + ':' + modelVersion)
+        }
+        if (beaconViewRef.current !== modelVersion) {
+          beaconViewRef.current = modelVersion
+          beacon('view: text=' + text.length + ' issues=' + (next === null ? 'null' : next.issues.length)
+            + ' marks=' + (next === null ? 0 : next.marks.length) + ' ignored=' + ignoredRef.current.size)
         }
         setView((previous) => (sameView(previous, next) ? previous : next))
         setActive(null)
@@ -1085,6 +1106,7 @@ window.__ModuleLoader__.load({
         // 灵敏度变了要重新问一次，所以缓存的文本里带上阈值
         const requestKey = draft + '|' + prefs.sensitivity
         if (requestedRef.current === requestKey) return undefined
+        if (modelCacheRef.current.has(draft)) { requestedRef.current = requestKey; return undefined }
         const timer = window.setTimeout(() => {
           const startedAt = Date.now()
           requestedRef.current = requestKey
@@ -1101,6 +1123,7 @@ window.__ModuleLoader__.load({
                 : [body.reason, body.chars !== undefined ? body.chars + ' 字' : '', body.aligned === false ? '分词未对齐' : '']
                   .filter((part) => typeof part === 'string' && part !== '').join(' · ')
               checkLogStore.set({ state, issues, ms: elapsed, at: Date.now(), detail: body?.error ? body.error : detail })
+              beacon('model reply: state=' + state + ' chars=' + (body?.chars ?? '?') + ' issues=' + issues + ' ms=' + elapsed + (body?.reason ? ' reason=' + body.reason : ''))
               if (body === null || body.state !== 'ready' || !Array.isArray(body.issues)) {
                 // 这一次没成，下次文本再变还有机会——但不能把这句永久钉死成"查过了"。
                 // 早先这里不重置，模型晚装好之后同一句话再也不会被查。
@@ -1108,6 +1131,10 @@ window.__ModuleLoader__.load({
                 return
               }
               modelRef.current = { text: draft, issues: body.issues }
+              modelCacheRef.current.set(draft, body.issues)
+              if (modelCacheRef.current.size > CACHE_LIMIT) {
+                modelCacheRef.current.delete(modelCacheRef.current.keys().next().value)
+              }
               setModelVersion((n) => n + 1)
             })
             .catch((failure) => {
@@ -1848,26 +1875,36 @@ window.__ModuleLoader__.load({
     return {
       inject: ['slots', 'locale'],
       apply(ctx) {
-        ctx.effect(() => ctx.locale.register(NS, STRINGS), 'zh-typo-check: dictionaries')
-        boundT = ctx.locale.bind(NS)
-        ctx.slots.inject('conversation.input.overlay', () => ctx.slots.register({
-          name: 'conversation.input.overlay',
-          id: 'zh-typo-check',
-          order: 10,
-          locale: NS,
-        }, TypoLayer))
-        ctx.slots.inject('settings.plugins.tab', () => ctx.slots.register({
-          name: 'settings.plugins.tab',
-          id: 'zh-typo-check',
-          order: 20,
-          label: () => boundT('title'),
-        }, ZhTypoSection))
-        ctx.slots.inject('plugins.detail.section', () => ctx.slots.register({
-          name: 'plugins.detail.section',
-          id: 'zh-typo-check',
-          order: 30,
-          label: () => boundT('options'),
-        }, ZhTypoDetailSection))      },
+        const beacon = (message) => {
+          try { void fetch('/zh-typo-model/log?msg=' + encodeURIComponent(message)).catch(() => {}) } catch { /* ignore */ }
+        }
+        try {
+          ctx.effect(() => ctx.locale.register(NS, STRINGS), 'zh-typo-check: dictionaries')
+          boundT = ctx.locale.bind(NS)
+          ctx.slots.inject('conversation.input.overlay', () => ctx.slots.register({
+            name: 'conversation.input.overlay',
+            id: 'zh-typo-check',
+            order: 10,
+            locale: NS,
+          }, TypoLayer))
+          ctx.slots.inject('settings.plugins.tab', () => ctx.slots.register({
+            name: 'settings.plugins.tab',
+            id: 'zh-typo-check',
+            order: 20,
+            label: () => boundT('title'),
+          }, ZhTypoSection))
+          ctx.slots.inject('plugins.detail.section', () => ctx.slots.register({
+            name: 'plugins.detail.section',
+            id: 'zh-typo-check',
+            order: 30,
+            label: () => boundT('options'),
+          }, ZhTypoDetailSection))
+          beacon('apply done: 3 slots registered')
+        } catch (error) {
+          beacon('apply failed: ' + (error instanceof Error ? error.message : String(error)))
+          throw error
+        }
+      },
     }
   },
 })
