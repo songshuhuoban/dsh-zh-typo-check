@@ -75,8 +75,8 @@ window.__ModuleLoader__.load({
         title: '中文检查',
         replace: '替换',
         ignore: '忽略',
-    fluencyBody: '这句话读起来不太通顺。模型对整句的把握偏低，可能有表达或语病问题——这只是提示，不做替换。',
-    optFluencyLabel: '整句通顺度（实验）',
+    fluencyBody: '可能不通畅',
+    optFluencyLabel: '整句通畅度（实验）',
     optFluencyHint: '没有具体错字、但整句读起来别扭时提醒一句。专业术语和人名可能误报。',
 
         sectionIntro: '在输入框里标出中文错别字和半角标点。本地规则永远可用；装上模型后，语义层面的误判也会被挡掉。',
@@ -130,7 +130,7 @@ window.__ModuleLoader__.load({
         title: 'Chinese check',
         replace: 'Replace',
         ignore: 'Ignore',
-    fluencyBody: 'This sentence reads awkwardly. The model is unsure about the whole line — a hint only, nothing is replaced.',
+    fluencyBody: 'Reads awkwardly',
     optFluencyLabel: 'Sentence fluency (experimental)',
     optFluencyHint: 'A one-line note when the whole sentence reads oddly even though no single character is wrong. Jargon and names may trigger it.',
 
@@ -867,7 +867,8 @@ window.__ModuleLoader__.load({
      */
     function sentenceBubble(active, t, handlers) {
       const anchor = active.anchor
-      const width = 260
+      // 只有一句短话，宽度按内容给，别让气泡空一大片
+      const width = 168
       const center = anchor.left + anchor.width / 2
       const left = Math.min(Math.max(8, center - width / 2), window.innerWidth - width - 8)
       const above = anchor.top > 96
