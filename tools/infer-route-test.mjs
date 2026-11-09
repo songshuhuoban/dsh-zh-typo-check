@@ -144,10 +144,19 @@ const mixed = await call('check?text=' + encodeURIComponent('我到上海住的�
 check('中英混排仍能抓到「还」→「话」',
   mixed.body.aligned === true && mixed.body.issues.some((i) => i.original === '还' && i.candidate === '话'),
   JSON.stringify({ aligned: mixed.body.aligned, issues: mixed.body.issues }))
+const mixedTypo = await call('check?text=' + encodeURIComponent('这个方案的风显太高了，我们用API再看看。') + '&delta=12')
+check('中英混排仍能抓到「显」→「险」',
+  mixedTypo.body.issues.some((i) => i.original === '显' && i.candidate === '险'),
+  JSON.stringify(mixedTypo.body.issues))
+// 通顺度对混排句不下结论：模型在 code-switch 上打分不可靠（18 句正确混排 5 句误报），
+// 因此宿主直接返回 null，避免截图里那种「开了通顺度却满屏蓝线」。
 const mixedGarbled = await fluencyOf('你公司大佛IG你哦as士大夫回家英特人阿斯顿')
-check('中英混排乱句仍返回通顺度', mixedGarbled !== null && mixedGarbled.samples > 0, JSON.stringify(mixedGarbled))
-check('中英混排乱句被判为不通顺', mixedGarbled !== null && mixedGarbled.low === true, String(mixedGarbled?.avg))
-console.log(`  正常 ${normal?.avg}，乱敲 ${garbled?.avg}，混排乱句 ${mixedGarbled?.avg}（阈值 ${normal?.threshold}）`)
+check('中英混排不下通顺度结论（避免误报）', mixedGarbled === null, JSON.stringify(mixedGarbled))
+const mixedClean = await call('check?text=' + encodeURIComponent('这个 API 的 timeout 设置需要调整一下。') + '&delta=12')
+check('正确的中英混排不误报',
+  mixedClean.body.aligned === true && mixedClean.body.issues.length === 0 && mixedClean.body.fluency === null,
+  JSON.stringify({ aligned: mixedClean.body.aligned, issues: mixedClean.body.issues, fluency: mixedClean.body.fluency }))
+console.log(`  正常 ${normal?.avg}，乱敲 ${garbled?.avg}（阈值 ${normal?.threshold}）；混排句不判通顺度`)
 check('正常句不被判为不通顺', normal !== null && normal.low === false, String(normal?.avg))
 check('乱敲句被判为不通顺', garbled !== null && garbled.low === true, String(garbled?.avg))
 check('通顺度来自已有打分（有采样数）', normal !== null && normal.samples > 0, String(normal?.samples))

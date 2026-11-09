@@ -447,7 +447,7 @@ window.__ModuleLoader__.load({
         while ((m = re.exec(text)) !== null) mark(m.index, m.index + m[0].length)
       }
 
-      // 链接、邮箱、@引用、/命令、路径、版本号、纯英文词
+      // 链接、邮箱、@引用、/命令、路径、版本号、纯英文词、点文件（.env / .gitignore）
       const atoms = [
         /https?:\/\/\S+/g,
         /www\.[^\s]+/g,
@@ -456,6 +456,7 @@ window.__ModuleLoader__.load({
         /[A-Za-z]:\\[^\s，。；、）】]*/g,
         /[\w.-]*[/\\][\w./-]*/g,
         /v?\d+(?:\.\d+)+/g,
+        /\.[A-Za-z][A-Za-z0-9_.-]*/g,
         /[A-Za-z][A-Za-z0-9_.-]*/g,
       ]
       for (const re of atoms) {
@@ -1094,7 +1095,7 @@ window.__ModuleLoader__.load({
         ignore: '忽略',
     fluencyBody: '可能不通畅',
     optFluencyLabel: '整句通畅度（实验）',
-    optFluencyHint: '没有具体错字、但整句读起来别扭时提醒一句。专业术语和人名可能误报。',
+    optFluencyHint: '没有具体错字、但整句读起来别扭时提醒一句。只对以中文为主的句子生效：中英混排、代码和数字较多的句子不判断（模型对混排打分不准，容易误报）。专业术语和人名也可能误报。',
 
         sectionIntro: '在输入框里标出中文错别字和半角标点。本地规则永远可用；装上模型后，语义层面的误判也会被挡掉。',
         options: '检查设置',
@@ -1151,7 +1152,7 @@ window.__ModuleLoader__.load({
         ignore: 'Ignore',
     fluencyBody: 'Reads awkwardly',
     optFluencyLabel: 'Sentence fluency (experimental)',
-    optFluencyHint: 'A one-line note when the whole sentence reads oddly even though no single character is wrong. Jargon and names may trigger it.',
+    optFluencyHint: 'A one-line note when the whole sentence reads oddly even though no single character is wrong. Only for mostly-Chinese sentences: mixed Chinese/English, code and numbers are skipped because the model cannot judge code-switching reliably. Jargon and names may also trigger it.',
 
         sectionIntro: 'Flags Chinese typos and half-width punctuation in the composer. The rule engine always works; with the model installed, semantic mistakes are caught too.',
         options: 'Checking options',

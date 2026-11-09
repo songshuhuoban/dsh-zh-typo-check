@@ -421,7 +421,7 @@ export function buildMask (text) {
     while ((m = re.exec(text)) !== null) mark(m.index, m.index + m[0].length)
   }
 
-  // 链接、邮箱、@引用、/命令、路径、版本号、纯英文词
+  // 链接、邮箱、@引用、/命令、路径、版本号、纯英文词、点文件（.env / .gitignore）
   const atoms = [
     /https?:\/\/\S+/g,
     /www\.[^\s]+/g,
@@ -430,6 +430,7 @@ export function buildMask (text) {
     /[A-Za-z]:\\[^\s，。；、）】]*/g,
     /[\w.-]*[/\\][\w./-]*/g,
     /v?\d+(?:\.\d+)+/g,
+    /\.[A-Za-z][A-Za-z0-9_.-]*/g,
     /[A-Za-z][A-Za-z0-9_.-]*/g,
   ]
   for (const re of atoms) {

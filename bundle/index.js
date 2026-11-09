@@ -439,12 +439,27 @@ async function serveFile(request) {
 const FLUENCY_THRESHOLD = Number(process.env.FLUENCY_THRESHOLD ?? 12.5)
 
 /**
+ * 中英混排 / 代码 / 数字串不判通顺度。
+ *
+ * 实测 18 句正确的中英混排（API、PR、npm install、URL、IP 等）里有 5 句会被
+ * 模型判成"不通畅"（avg 4.05~12.16），而乱句的 avg 也在 6 左右——两个区间重叠，
+ * 没有阈值可以分开。通顺度是实验功能，宁可对混排句不下结论，也不要高频误报蓝线；
+ * 混排句里的中文错字仍然照常检查（token 位置映射已支持）。
+ */
+const CODE_SWITCH_RE = /[A-Za-z]{2,}|\d{2,}|https?:\/\/|www\./
+
+/**
  * 把逐字得分收成一句通顺度。
  *
  * 每个分数是「模型对原文这个字的评分」——越负说明模型越没料到这个字。
  * 取平均比取最低稳：单个专有名词会拉低最低分，但拉不动平均。
+ *
+ * @param {string} text 原句（用于判断是否适合下结论）
+ * @param {number[]} scores 每个已打分位置的「原字得分」
  */
-function summarizeFluency(scores) {
+function summarizeFluency(text, scores) {
+  if (typeof text !== 'string') return null
+  if (CODE_SWITCH_RE.test(text)) return null
   if (!Array.isArray(scores) || scores.length === 0) return null
   let sum = 0
   let min = Number.POSITIVE_INFINITY
@@ -596,7 +611,7 @@ async function resource(request) {
         inflightChecks.set(cacheKey, pending)
       }
       const { issues, scores } = await pending
-      const fluency = summarizeFluency(scores)
+      const fluency = summarizeFluency(text, scores)
       lastCheck = { at: Date.now(), chars, issues: issues.length, threshold: Number.isFinite(delta) ? delta : null, head: text.slice(0, 24) }
       return json({
         state: 'ready',
