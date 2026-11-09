@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "node tools/build-client.mjs",
-    "test": "node src/editor.test.mjs && node src/demo.mjs && node src/adversarial.mjs",
+    "test": "node src/editor.test.mjs && node src/demo.mjs && node src/adversarial.mjs && node src/config-store.test.mjs && node tools/config-schema-test.mjs && node tools/client-config-wiring-test.mjs",
+    "config:test": "node src/config-store.test.mjs && node tools/config-schema-test.mjs && node tools/client-config-wiring-test.mjs",
     "demo": "node src/demo.mjs",
     "adversarial": "node src/adversarial.mjs",
     "bench": "node src/bench.mjs",
@@ -21,6 +22,7 @@
     "model:research": "node tools/hf-detail.mjs && node tools/hf-small-survey.mjs"
   },
   "devDependencies": {
+    "@deepseek-ai/schemastery": "3.19.0",
     "@huggingface/transformers": "^4.3.2",
     "pinyin-pro": "^3.29.5",
     "segmentit": "^2.0.3"

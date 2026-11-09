@@ -28,6 +28,7 @@ function asStatements(file) {
 const SPLICES = [
   ['    /*__CORE__*/', asStatements('core.mjs')],
   ['    /*__EDITOR__*/', asStatements('editor.mjs')],
+  ['    /*__CONFIG_STORE__*/', asStatements('config-store.mjs')],
 ]
 
 const templatePath = path.join(root, 'src', 'client.js')
@@ -55,7 +56,7 @@ for (const [marker, code] of SPLICES) {
 
 fs.mkdirSync(outDir, { recursive: true })
 fs.writeFileSync(path.join(outDir, 'client.js'), output, 'utf8')
-console.log('build-client: bundle/client.js <- src/core.mjs + src/editor.mjs + src/client.js')
+console.log('build-client: bundle/client.js <- src/{core,editor,config-store}.mjs + src/client.js')
 
 // 宿主侧：推理与分词保持为独立模块，由 index.js 直接 import
 const HOST_MODULES = ['core.mjs', 'tokenizer.mjs', 'infer.mjs', 'lexicon.mjs', 'l1.mjs', 'checker.mjs']

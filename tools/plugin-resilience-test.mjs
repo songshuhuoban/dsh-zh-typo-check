@@ -8,12 +8,13 @@
  */
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'
-import os from 'node:os'
 import { pathToFileURL } from 'node:url'
 import path from 'node:path'
 
 const root = path.resolve(import.meta.dirname, '..')
-const tmp = path.join(os.tmpdir(), `zh-typo-resilience-${process.pid}`)
+// 临时副本放在仓库内（.tmp-* 已被 gitignore）：宿主入口现在静态依赖
+// @deepseek-ai/schemastery，放在系统临时目录会解析不到仓库的 node_modules。
+const tmp = path.join(root, `.tmp-resilience-${process.pid}`)
 const bundle = path.join(tmp, 'bundle')
 
 await fsp.rm(tmp, { recursive: true, force: true })

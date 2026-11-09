@@ -1,4 +1,4 @@
-# DSH 输入框中文词语检查 — 调研与设计笔记
+﻿# DSH 输入框中文词语检查 — 调研与设计笔记
 
 ## 一、DSH 输入框的真实结构
 
@@ -938,3 +938,158 @@ export function originFormsWord(lexicon, text, index) {
 其中 `生话`/`建意`/`近来` 都落在句子的后半段——每次检查最多打分 7 个位置并按步长取样，
 长句子后半段可能被跳过；`邮相` 位置被取样到了，但模型没给出足够的 Δ。这是当前召回率
 79.5% 的具体来源，不是偶发。
+## 三十四、配置持久化：从 localStorage 挪到插件 Config（0.2.0）
+
+### 现象与根因
+
+用户反馈「每次启动或升级，配置项被重置」。根因不在插件逻辑，在存储介质：
+
+DSH Desktop 宿主 `dsh-desktop-host/lib/index.js` 里 `main()` 启动 Web 应用时写死
+
+```js
+args: ['--no-open', '--host', '127.0.0.1', '--port', '0']
+```
+
+`--port 0` 由系统分配端口，每次启动都不同；Electron 拿到的 URL 是
+`ctx.connection.authenticatedUrl(`${protocol}//127.0.0.1:${ctx.webServer.port}`)`。
+而 localStorage 按 **origin（scheme + host + port）** 隔离——端口一换就是一份全新的
+空存储。所以「重启 / 升级（升级必然重启宿主）后配置回到默认值」是必然而不是偶发。
+
+模型文件没这个问题：它一直在 `$DSH_PROFILE_DIR/models/zh-typo-check`，不随端口走。
+出问题的只有放进 localStorage 的检查设置。
+
+### 方案取舍
+
+| 方案 | 结论 |
+| --- | --- |
+| 继续 localStorage + cookie（cookie 不区分端口） | ❌ cookie 4 KB 上限、每次请求都带、换 host 就失效；是绕过问题不是解决 |
+| 宿主自己写 JSON 设置文件 + 新路由 | ❌ 要自己处理并发、原子写、校验、迁移；DSH 已经有一等公民机制，重复造 |
+| **插件 Config（volatile）+ DSH settings/config-editor** | ✅ 官方机制：写进 profile 的 `cordis.patch.yml`，跨重启、跨插件升级保留；失败/冲突由设置服务处理 |
+
+选第三种。它在 DSH 里已有先例：同一位作者维护的 `dsh-next-input` 就是用
+`@deepseek-ai/schemastery` 的 volatile Config 持久化设置，profile patch 里能看到
+它写下的 `- id: next-input ... config: { timeoutMs: 120000 }`。
+
+### 实现
+
+宿主（`bundle/index.js`）：
+
+```js
+export const Config = z.object({
+  enabled: z.boolean().default(true).volatile(),
+  punctuation: z.boolean().default(true).volatile(),
+  model: z.boolean().default(true).volatile(),
+  fluency: z.boolean().default(false).volatile(),
+  sensitivity: z.union([z.const('low'), z.const('normal'), z.const('high')]).default('normal').volatile(),
+  source: z.union([z.const('auto'), z.const('mirror'), z.const('official'), z.const('custom')]).default('auto').volatile(),
+  customBase: z.string().default('').volatile(),
+})
+```
+
+- 只有标了 `.volatile()` 的字段才会被 DSH 提交进运行实例并持久化；漏标 = 该设置不保存。
+- 命名空间是 **Loader 条目 id**（`zh-typo-check`），不是 npm 包名；`dsh-settings`
+  的 `describe()` 按 `entry.options.id` 出表单。
+- `apply(ctx, refs)` 第二个参数是 volatile 字段的 Ref；宿主行为仍以客户端传入的
+  `delta`/`source` 为准，refs 只写一行启动诊断（证明配置真的传进来了）。
+
+客户端（新增 `src/config-store.mjs`，构建时拼进 `bundle/client.js`）：
+
+- `ctx.inject(['configForms'], ...)` **可选**注入：旧版 DSH 没有这个服务时插件照常
+  加载，桥接不上就退回 localStorage（旧行为，只是仍会随 origin 丢）。
+- 乐观更新：点一下开关界面立即变，再逐字段 `scope.set(field, value)` 写 Host。
+- 写失败（`false` / 抛异常）回滚该字段到 Host 已接受值，并在设置卡片里显示
+  「设置没能保存：…」；字段级写序号保证并发时旧的失败不会覆盖新的成功。
+- 首次接上 Host 且 profile 里还没有用户覆盖时，把旧版 localStorage 里的设置一次性
+  迁移过去（只写与 Host 默认值不同的字段）；之后 Host 是唯一事实来源。
+- 自定义下载地址是输入框，改成**失焦 / 回车提交**（不再每敲一个字写一次 profile）；
+  输入过程中显示原有校验提示，提交失败保留输入。
+
+版本与依赖：`bundle/package.json` → `0.2.0`，新增
+`peerDependencies: { "@deepseek-ai/schemastery": "~3.19.0" }`（由 DSH 运行时提供，不随包
+安装）与 `engines.dsh: ">=0.2.1-rc.2"`（插件配置接口的最低版本）。
+
+### 安全网：三层测试
+
+1. `src/config-store.test.mjs`（69 项）：桥本身——缓存容错、Host 快照采纳、乐观写、
+   拒绝回滚、并发旧失败、外部改动同步、一次性迁移不覆盖已有用户值、未就绪补写、
+   旧版退路。
+2. `tools/config-schema-test.mjs`（22 项）：宿主 schema——字段集合与客户端
+   `SETTINGS_FIELDS` 对齐、每个字段都有 volatile、默认值与 `DEFAULT_SETTINGS` 一致、
+   非法值被拒、`apply` 在没有 refs 的测试上下文里不抛。
+3. `tools/client-config-wiring-test.mjs`（18 项）：**加载真实构建产物**
+   `bundle/client.js`，用假模块加载器 + 假 React + 假 `configForms` 跑 `apply()`，
+   断言三个槽位照旧注册、命名空间是 `zh-typo-check`、迁移路径真的调用
+   `form.set`、没有 configForms 时 apply 不挂。
+
+另跑了：`plugin-resilience-test`、`infer-route-test`（真实模型加载 + 检查路由）、
+`model-service-test`（真实下载 / Range / 删除）、`npm test` 全绿。
+
+### 一个连带坑
+
+宿主入口现在静态 `import '@deepseek-ai/schemastery'`（schemastery schema 必须在模块
+求值时就位，不能懒加载——`Config` 是静态导出）。带来两个后果：
+
+- `tools/plugin-resilience-test.mjs` 原本把 bundle 复制到系统临时目录再 import；那里
+  解析不到仓库的 node_modules。改成复制到仓库内的 `.tmp-resilience-<pid>`（.gitignore
+  已覆盖 `.tmp-*`），让 Node 向上找到开发依赖。
+- 仓库要加 `devDependencies: @deepseek-ai/schemastery`；没装时
+  `tools/config-schema-test.mjs` 打印 SKIP 并以 0 退出，不影响其他测试。
+
+### 还没验证的部分
+
+**没有浏览器控制**：真实页面里「点开关 → 写 profile → 重启后还在」的完整链路没有
+在运行中的 DSH 里跑过（当前 profile 装的还是 0.1.3 的 npm 包，仓库改动要重新构建、
+发布/链接安装并重启宿主才生效）。已覆盖的是：构建产物接线、configForms 命名空间与
+写入调用、宿主 schema/持久化字段声明、profile patch 机制在同类插件上的既有事实。
+
+### 后续可做（同一类问题）
+
+「忽略」列表目前仍存在 localStorage（key `dsh.zh-typo-check.ignored`）：它也会随
+origin 变化在重启后丢失。它是用户数据而非配置，本轮没有一起迁；要迁的话有两条路：
+加一个 volatile 数组字段进 Config（实现最省事，但会让 profile patch 随忽略次数增长），
+或者给它单独一个 Host 侧存储文件。先记在这里。
+
+### 复核后加固（两轮）
+
+第一轮独立复核发现并修掉：
+
+1. **保存失败会抹掉输入框内容**（重要）：失焦提交失败后桥回滚 store 值，React effect
+   又把草稿同步回旧值，用户刚填的自定义地址消失。修法：把「什么时候保留草稿」
+   抽成 `shouldKeepDraft()`（聚焦中 / 本字段自己失败且草稿与已接受值不同），effect
+   按它决定是否回填；补了单测。
+2. **断开重连丢改动**：原来 `detach()` 清掉就绪前的本地改动，重连后又被 Host 快照覆盖。
+   修法：改动统一进 `pendingPush`，detach 不清、重连后补写；迁移只做一次、补写可重试。
+3. **命名空间不可用时静默退化**：`configForms` 在但本插件命名空间不在（设置服务没起来 /
+   Config 没有 volatile 字段）时，原来会假装接上、只写本地缓存。现在 `status:
+   'unavailable'` 会报错（设置卡片可见 + beacon），恢复 ready 后自动清除；`subscribe`
+   抛异常也会复位 scope 而不是留下半接状态。
+4. **宿主对旧 schemastery 的防御**：`bundle/index.js` 用 `live()` 包住 `.volatile()`，
+   解析到没有该方法的旧版（如全局 CLI dsh 0.1.0-rc.7 附带的 3.18.1）时降级为普通
+   字段：插件照常加载，只是设置不持久化、客户端会报命名空间不可用，而不是整个插件
+   import 失败。
+5. **测试恒真项**：`config-schema-test` 原来用 try/catch 断言 apply 不抛（apply 自己
+   吞异常，永远 PASS）→ 改为断言「路由注册」这个可观察副作用，并直接测
+   `configSummary` 的几种输入形状；`client-config-wiring-test` 的「没有误写 Host」
+   原来检查一个从未接线的 form → 改为整个 run 共享同一个 form，并拿
+   `bundle/cordis.patch.yml` 的 insert id 交叉断言命名空间。
+6. **README 迁移承诺过宽**：桌面版重启后旧 origin 的 localStorage 已不可读，迁移只能
+   覆盖「页面还读得到缓存」的情况（热更、固定端口），文案按此限定。
+
+第二轮复核（状态机细节）：
+
+7. **错误清除按字段隔离**：原来任意字段写成功都会清空全局 error，导致 customBase
+   写失败后只要别的字段成功，草稿保护就失效、用户输入仍会被抹掉。现在按
+   `failedFields` 记账，`accepted(field)` 只清它自己的错误；命名空间不可用是独立
+   错误码，不受写回执影响。设置卡片按错误码本地化文案（store 不再硬编码中文）。
+8. **迁移改成一次批量 mutate + 可重试**：原来逐字段写，部分成功会互相干扰；`migrated`
+   在写之前就置位，失败后不再重试；失败回滚还会用 Host 默认值覆盖旧 localStorage
+   缓存，真正丢旧设置。现在迁移/就绪前改动合成一次 `form.mutate(ops)`，失败保留
+   待写值、旧缓存不被覆盖、最多重试 3 次（不无限刷 profile patch）。
+9. **重连时在途写不丢**：`detach()` 把在途字段的期望值转进 `pendingPush`，重连后
+   重发，避免「provider 重载时写被拒且不回滚」的静默回退。设置/错误订阅改用
+   `useSyncExternalStore`，消除 render 与 effect 之间丢通知的窗口。
+10. 其他：`schemastery` peer 放宽为 `>=3.18.5 <4`（DSH 0.2.1-rc.2 带的是 3.18.5，
+    也支持 `.volatile()`，0.2.2-rc.1 带 3.19.0）；`configSummary` 移进 apply 的 try
+    并兜住不可序列化值（诊断不能影响加载）。
+
+测试数：config-store 69、config-schema 22、client wiring 18，其余回归同前。

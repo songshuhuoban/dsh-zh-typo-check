@@ -20,6 +20,37 @@ import os from 'node:os'
 import crypto from 'node:crypto'
 import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
+import z from '@deepseek-ai/schemastery'
+
+/**
+ * 老版本 DSH 自带的 schemastery（3.18.x）没有 `.volatile()`。
+ * 那种环境里降级成普通字段：插件照常加载、设置不持久化，而不是整个插件 import 失败。
+ */
+function live(schema) {
+  return typeof schema.volatile === 'function' ? schema.volatile() : schema
+}
+
+/**
+ * 用户偏好（volatile 配置）。
+ *
+ * 为什么不放浏览器 localStorage：DSH Desktop 每次启动都用 `--port 0` 起本地服务，
+ * 页面 origin 每次不同，localStorage 按 origin 隔离 —— 重启/升级后设置一定丢。
+ * 声明成 Cordis Config 的 volatile 字段后，DSH 的 settings 服务会把改动写进
+ * profile 的 `cordis.patch.yml`（与模型文件同属 profile，跨重启、跨插件升级保留）。
+ *
+ * 字段与 `src/config-store.mjs` 的 SETTINGS_FIELDS 一一对应；改这里必须同步那边。
+ */
+export const Config = z.object({
+  enabled: live(z.boolean().default(true).description('Underline Chinese typos in the composer.')),
+  punctuation: live(z.boolean().default(true).description('Also flag half-width ASCII punctuation.')),
+  model: live(z.boolean().default(true).description('Use the local model for semantic checks when installed.')),
+  fluency: live(z.boolean().default(false).description('Experimental: hint when a whole sentence reads awkwardly.')),
+  sensitivity: live(z.union([z.const('low'), z.const('normal'), z.const('high')]).default('normal')
+    .description('Model sensitivity: conservative, normal, or aggressive.')),
+  source: live(z.union([z.const('auto'), z.const('mirror'), z.const('official'), z.const('custom')]).default('auto')
+    .description('Preferred model download source.')),
+  customBase: live(z.string().default('').description('Custom download base URL (http/https).')),
+})
 
 /**
  * 推理相关的模块**全部惰性加载**。
@@ -619,6 +650,25 @@ function bootLog(line) {
 /** 插件在客户端的包名，用于查客户端模块表。 */
 const PACKAGE_NAME = 'dsh-zh-typo-check'
 
+/** volatile 配置以 Ref 形式传进 apply；这里只取一份可读快照写进启动痕迹。（导出供单测） */
+export function configSummary(refs) {
+  const fields = ['enabled', 'punctuation', 'model', 'fluency', 'sensitivity', 'source']
+  const value = {}
+  for (const field of fields) {
+    const ref = refs?.[field]
+    try {
+      value[field] = ref !== null && typeof ref === 'object' && typeof ref.get === 'function' ? ref.get() : ref
+    } catch (_error) {
+      value[field] = '<unreadable>'
+    }
+  }
+  try {
+    return JSON.stringify(value)
+  } catch (_error) {
+    return '<unserializable>'
+  }
+}
+
 /**
  * 查一遍客户端模块表：我们的条目在不在、路径是什么、文件在不在。
  *
@@ -661,9 +711,10 @@ function inspectClientEntry(ctx) {
   }
 }
 
-export function apply(ctx) {
-  bootLog(`apply start, webServer=${typeof ctx.webServer}, effect=${typeof ctx.effect}`)
+export function apply(ctx, refs) {
   try {
+    // 诊断不能影响加载：configSummary 可能遇到不可序列化的 Ref，放进 try 里。
+    bootLog(`apply start, webServer=${typeof ctx.webServer}, effect=${typeof ctx.effect}, settings=${configSummary(refs)}`)
     current = freshState()
     if (ctx.webServer === undefined || ctx.webServer === null) {
       bootLog('no webServer service, model routes disabled')

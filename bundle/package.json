@@ -1,6 +1,6 @@
 {
   "name": "dsh-zh-typo-check",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "中文错别字与半角标点检查，用于 DSH 输入框。规则即时生效，语义错由可下载的本地模型补上。",
   "keywords": [
     "dsh",
@@ -47,6 +47,12 @@
   "dependencies": {
     "onnxruntime-node": "1.30.0"
   },
+  "peerDependencies": {
+    "@deepseek-ai/schemastery": ">=3.18.5 <4"
+  },
+  "engines": {
+    "dsh": ">=0.2.1-rc.2"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
@@ -54,7 +60,7 @@
     "client": {
       "platform": "web",
       "immediately": true,
-      "inject": ["@deepseek-ai/dsh-client-ui-conversation"]
+      "inject": ["@deepseek-ai/dsh-client-ui-conversation", "@deepseek-ai/dsh-client-ui-settings"]
     }
   }
 }

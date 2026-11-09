@@ -27,6 +27,10 @@ window.__ModuleLoader__.load({
     /*__CORE__*/
     // ---- end checker core ----
 
+    // ---- settings persistence bridge (generated from src/config-store.mjs) ----
+    /*__CONFIG_STORE__*/
+    // ---- end settings persistence bridge ----
+
     /**
      * 诊断打点：把客户端发生的事写到宿主日志里。
      *
@@ -102,6 +106,8 @@ window.__ModuleLoader__.load({
         sourceCustom: '自定义',
         customPlaceholder: 'https://你的镜像/…/macbert4csc-base-chinese/resolve/main',
         customInvalid: '地址需要以 http:// 或 https:// 开头',
+        settingsSaveFailed: '设置没能保存：{error}',
+        settingsNamespaceUnavailable: '这个 DSH 版本没有提供本插件的配置，设置只会留在当前页面。',
         model: '本地模型',
         stateAbsent: '未安装',
         stateDownloading: '下载中 {percent}%',
@@ -157,6 +163,8 @@ window.__ModuleLoader__.load({
         sourceCustom: 'Custom',
         customPlaceholder: 'https://your-mirror/…/macbert4csc-base-chinese/resolve/main',
         customInvalid: 'The address must start with http:// or https://',
+        settingsSaveFailed: 'Settings were not saved: {error}',
+        settingsNamespaceUnavailable: 'This DSH version does not expose this plugin’s configuration, so settings only apply to this page.',
         model: 'Local model',
         stateAbsent: 'Not installed',
         stateDownloading: 'Downloading {percent}%',
@@ -190,7 +198,14 @@ window.__ModuleLoader__.load({
     }
 
     // ---- 用户偏好 ----
+    //
+    // 设置存在宿主插件的 Config（DSH 会把它写进 profile 的 cordis.patch.yml），
+    // 不再只存 localStorage：桌面版每次启动都会换一个本地端口，origin 一变
+    // localStorage 就整份丢失——这正是「重启/升级后配置项被重置」的根因。
+    // 旧版 DSH 没有 configForms 时，桥自动退化为只写本地缓存。
     const SETTINGS_KEY = 'dsh.zh-typo-check.settings'
+    /** 与宿主 Config 共用的 Loader 条目 id：configForms 按它找配置命名空间。 */
+    const CONFIG_NAMESPACE = 'zh-typo-check'
 
     /** 灵敏度档位 → 模型层的 Δ 阈值。阈值越低越容易报，也越容易误报。 */
     const SENSITIVITY = {
@@ -199,65 +214,30 @@ window.__ModuleLoader__.load({
       high: 9,
     }
 
-    const DEFAULT_SETTINGS = {
-      enabled: true,
-      punctuation: true,
-      model: true,
-      // 实验功能：整句通顺度提示（模型对原文每个字的平均把握偏低时提醒），默认关闭
-      fluency: false,
-      sensitivity: 'normal',
-      source: 'auto',
-      customBase: '',
-    }
-
-    function loadSettings() {
+    /** 隐私模式等场景下 localStorage 可能直接抛异常，这里兜住。 */
+    function safeLocalStorage() {
       try {
-        const raw = window.localStorage.getItem(SETTINGS_KEY)
-        const parsed = raw === null ? {} : JSON.parse(raw)
-        if (parsed === null || typeof parsed !== 'object') return { ...DEFAULT_SETTINGS }
-        return {
-          enabled: typeof parsed.enabled === 'boolean' ? parsed.enabled : DEFAULT_SETTINGS.enabled,
-          punctuation: typeof parsed.punctuation === 'boolean' ? parsed.punctuation : DEFAULT_SETTINGS.punctuation,
-          model: typeof parsed.model === 'boolean' ? parsed.model : DEFAULT_SETTINGS.model,
-          sensitivity: Object.prototype.hasOwnProperty.call(SENSITIVITY, parsed.sensitivity)
-            ? parsed.sensitivity
-            : DEFAULT_SETTINGS.sensitivity,
-          source: ['auto', 'mirror', 'official', 'custom'].includes(parsed.source)
-            ? parsed.source
-            : DEFAULT_SETTINGS.source,
-          customBase: typeof parsed.customBase === 'string' ? parsed.customBase : DEFAULT_SETTINGS.customBase,
-        }
+        return window.localStorage
       } catch (_error) {
-        return { ...DEFAULT_SETTINGS }
+        return null
       }
     }
 
-    function saveSettings(value) {
-      try {
-        window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(value))
-      } catch (_error) { /* private mode: keep it in memory */ }
-    }
+    const configSettings = new ConfigSettings({
+      storage: safeLocalStorage(),
+      storageKey: SETTINGS_KEY,
+      namespace: CONFIG_NAMESPACE,
+      onEvent: (message) => beacon('settings ' + message),
+    })
 
     /**
      * 偏好存在模块级：输入框浮层和设置页是两个槽位里的组件，
      * 改一处要立刻影响另一处，靠这个小 store 打通。
      */
     const settingsStore = {
-      value: null,
-      listeners: new Set(),
-      get() {
-        if (this.value === null) this.value = loadSettings()
-        return this.value
-      },
-      set(patch) {
-        this.value = { ...this.get(), ...patch }
-        saveSettings(this.value)
-        for (const listener of this.listeners) listener(this.value)
-      },
-      subscribe(listener) {
-        this.listeners.add(listener)
-        return () => this.listeners.delete(listener)
-      },
+      get() { return configSettings.get() },
+      set(patch) { return configSettings.set(patch) },
+      subscribe(listener) { return configSettings.subscribe(listener) },
     }
 
 
@@ -287,9 +267,16 @@ window.__ModuleLoader__.load({
       return value
     }
     function useSettings() {
-      const [value, setValue] = React.useState(settingsStore.get())
-      React.useEffect(() => settingsStore.subscribe(setValue), [])
-      return value
+      return React.useSyncExternalStore(settingsStore.subscribe, settingsStore.get, settingsStore.get)
+    }
+
+    /** 设置错误的订阅/读取器（React 18 的 useSyncExternalStore 要求稳定引用）。 */
+    const subscribeSettingsError = (listener) => configSettings.subscribeError(listener)
+    const readSettingsError = () => configSettings.getErrorState()
+
+    /** 设置写入失败的最近状态：{ code, message, fields }；null 表示没有错误。 */
+    function useSettingsError() {
+      return React.useSyncExternalStore(subscribeSettingsError, readSettingsError, readSettingsError)
     }
 
     /** Resolve the theme warning colour once, so the wave matches light and dark. */
@@ -1029,6 +1016,7 @@ window.__ModuleLoader__.load({
       // 槽位没注入 t 时退回注册期绑定好的那个（同样是"调用时读当前语言"）
       const t = typeof props.t === 'function' ? props.t : boundT
       const prefs = useSettings()
+      const settingsError = useSettingsError()
       const [status, setStatus] = React.useState(null)
       // 两种错误分开：轮询失败说明服务不可用，动作失败说明这一次点击没成功。
       // 混在一起会被下一次成功的轮询立刻抹掉，用户就只看到"点了没反应"。
@@ -1039,6 +1027,32 @@ window.__ModuleLoader__.load({
       const lastCheck = useCheckLog()
       /** 点过按钮之后的一段时间内继续轮询：宿主的下载可能还在探测线路，状态没翻过来。 */
       const settleRef = React.useRef(0)
+
+      /**
+       * 自定义下载地址是输入框：按「失焦提交」处理。
+       * 每敲一个字就写一次 Host 既浪费又会让 profile 文件抖动，而且用户还在输入时
+       * 写到一半的地址本来也没意义；失焦/回车才提交，提交失败保留输入并给出提示。
+       */
+      const [customBaseDraft, setCustomBaseDraft] = React.useState(prefs.customBase)
+      const customBaseFocused = React.useRef(false)
+      const customBaseDraftRef = React.useRef(customBaseDraft)
+      customBaseDraftRef.current = customBaseDraft
+      React.useEffect(() => {
+        // 正在输入、或这个字段自己提交失败还没落盘时保留草稿
+        // （别的字段写成功不能解除这里的保护，否则失败会把用户填的地址抹掉）
+        const failed = settingsError !== null && settingsError.code === 'write-failed'
+          && settingsError.fields.includes('customBase')
+        if (shouldKeepDraft(customBaseDraftRef.current, prefs.customBase, {
+          focused: customBaseFocused.current,
+          failed,
+        })) return
+        setCustomBaseDraft(prefs.customBase)
+      }, [prefs.customBase, settingsError])
+      const commitCustomBase = React.useCallback(() => {
+        const value = customBaseDraftRef.current.trim()
+        if (value === configSettings.get().customBase) return
+        settingsStore.set({ customBase: value })
+      }, [])
 
       React.useEffect(() => {
         let alive = true
@@ -1073,7 +1087,7 @@ window.__ModuleLoader__.load({
           let url = MODEL_ENDPOINT + action
           if (action === 'download') {
             url += '?source=' + encodeURIComponent(prefs.source)
-            if (prefs.source === 'custom') url += '&base=' + encodeURIComponent(prefs.customBase.trim())
+            if (prefs.source === 'custom') url += '&base=' + encodeURIComponent(customBaseDraftRef.current.trim())
           }
           const response = await fetch(url, { cache: 'no-store' })
           if (!response.ok) {
@@ -1090,9 +1104,9 @@ window.__ModuleLoader__.load({
           setBusy(false)
           setTick((n) => n + 1)
         }
-      }, [prefs.source, prefs.customBase])
+      }, [prefs.source])
 
-      const customValid = isValidBase(prefs.customBase)
+      const customValid = isValidBase(customBaseDraft)
       const canDownload = prefs.source !== 'custom' || customValid
       const error = actionError ?? pollError
       const state = status?.state ?? 'unknown'
@@ -1180,8 +1194,19 @@ window.__ModuleLoader__.load({
                 type: 'url',
                 spellCheck: false,
                 placeholder: t('customPlaceholder'),
-                value: prefs.customBase,
-                onChange: (event) => settingsStore.set({ customBase: event.target.value }),
+                value: customBaseDraft,
+                onChange: (event) => setCustomBaseDraft(event.target.value),
+                onFocus: () => { customBaseFocused.current = true },
+                onBlur: () => {
+                  customBaseFocused.current = false
+                  commitCustomBase()
+                },
+                onKeyDown: (event) => {
+                  if (event.key !== 'Enter') return
+                  event.preventDefault()
+                  commitCustomBase()
+                  event.currentTarget.blur()
+                },
                 style: {
                   width: '100%',
                   boxSizing: 'border-box',
@@ -1201,6 +1226,20 @@ window.__ModuleLoader__.load({
                   style: { fontSize: '12px', color: 'var(--dsw-alias-state-error-primary)' },
                 }, t('customInvalid')),
             ])
+            : null,
+          settingsError !== null
+            ? React.createElement('div', {
+              key: 'settings-error',
+              role: 'status',
+              style: {
+                fontSize: '12px',
+                lineHeight: '18px',
+                padding: '2px 0 8px',
+                color: 'var(--dsw-alias-state-error-primary)',
+              },
+            }, settingsError.code === 'namespace-unavailable'
+              ? t('settingsNamespaceUnavailable')
+              : format(t('settingsSaveFailed'), { error: settingsError.message }))
             : null,
         ]),
 
@@ -1394,6 +1433,36 @@ window.__ModuleLoader__.load({
       ])
     }
 
+    /**
+     * 把设置桥接到 Host 的插件配置（configForms）。
+     *
+     * 这是可选用途：旧版 DSH 没有 configForms 时，插件不能因此整个不加载——
+     * 桥接不上就退回 localStorage，行为与旧版一致（只是仍会随 origin 丢失）。
+     */
+    function attachPersistedSettings(ctx, log) {
+      try {
+        ctx.inject(['configForms'], (scope) => {
+          scope.effect(() => {
+            let form = null
+            try {
+              form = scope.configForms.get(CONFIG_NAMESPACE)
+            } catch (error) {
+              log('settings bridge failed: ' + (error instanceof Error ? error.message : String(error)))
+              return () => {}
+            }
+            const attached = configSettings.attach(form)
+            log('settings bridge ' + (attached ? 'attached to ' + CONFIG_NAMESPACE : 'unavailable'))
+            return () => {
+              configSettings.detach()
+              log('settings bridge detached')
+            }
+          }, 'zh-typo-check: persisted settings')
+        })
+      } catch (error) {
+        log('settings bridge setup failed: ' + (error instanceof Error ? error.message : String(error)))
+      }
+    }
+
     return {
       inject: ['slots', 'locale'],
       apply(ctx) {
@@ -1421,7 +1490,9 @@ window.__ModuleLoader__.load({
             order: 30,
             label: () => boundT('options'),
           }, ZhTypoDetailSection))
-          beacon('apply done: 3 slots registered')
+          // 设置持久化：Host 的 plugin Config 在 profile patch 里，跨重启/升级保留
+          attachPersistedSettings(ctx, beacon)
+          beacon('apply done: 3 slots registered; settings bridge requested')
         } catch (error) {
           beacon('apply failed: ' + (error instanceof Error ? error.message : String(error)))
           throw error
