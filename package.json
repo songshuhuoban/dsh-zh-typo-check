@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "node tools/build-client.mjs",
-    "test": "node src/editor.test.mjs && node src/demo.mjs && node src/adversarial.mjs && node src/config-store.test.mjs && node tools/config-schema-test.mjs && node tools/client-config-wiring-test.mjs",
-    "config:test": "node src/config-store.test.mjs && node tools/config-schema-test.mjs && node tools/client-config-wiring-test.mjs",
+    "test": "node src/editor.test.mjs && node src/demo.mjs && node src/adversarial.mjs && node src/config-store.test.mjs && node tools/config-schema-test.mjs && node tools/client-config-wiring-test.mjs && node tools/uninstall-test.mjs",
+    "config:test": "node src/config-store.test.mjs && node tools/config-schema-test.mjs && node tools/client-config-wiring-test.mjs && node tools/uninstall-test.mjs",
     "demo": "node src/demo.mjs",
     "adversarial": "node src/adversarial.mjs",
     "bench": "node src/bench.mjs",

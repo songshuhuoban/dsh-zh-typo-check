@@ -1,4 +1,4 @@
-﻿# DSH 输入框中文词语检查 — 调研与设计笔记
+# DSH 输入框中文词语检查 — 调研与设计笔记
 
 ## 一、DSH 输入框的真实结构
 
@@ -1093,3 +1093,53 @@ origin 变化在重启后丢失。它是用户数据而非配置，本轮没有�
     并兜住不可序列化值（诊断不能影响加载）。
 
 测试数：config-store 69、config-schema 22、client wiring 18，其余回归同前。
+## 三十五、升级卡在「停止并移除旧版本」：把卸载/生命周期做干净（0.2.1）
+
+### 现场
+
+DSH 插件页点「更新」0.1.3 → 0.2.0，弹窗是进度步骤：
+
+```
+✓ 检查 0.2.0
+○ 停止并移除 0.1.3     ← 卡在这里
+  正在更新
+```
+
+宿主自己的操作日志 `plugin-operations/operations.jsonl` 最后一条：
+
+```json
+{"reason":"remove","target":"dsh-zh-typo-check","stage":"remove","version":"0.1.3",
+ "phase":"started","time":"2026-11-09T07:59:30.421Z"}
+```
+
+之后没有 `settled`（正常 remove 都是 started 后 1–3 秒 settled），DSH 进程在
+16:03 被重启，profile 留下半截状态：`dsh.profile.bundles` 已去掉插件、依赖仍是
+0.1.3、`node_modules/dsh-zh-typo-check` 文件已不在 → 插件不加载。
+
+0.2.0 包本身排除了嫌疑：registry tarball 的 shasum 与本地构建一致；在干净临时项目
+里 `pnpm add dsh-zh-typo-check@0.2.0` 14.9 秒成功（只有 schemastery peer 警告）；
+更新日志里「检查 0.2.0」也通过了。卡点在**旧版 0.1.3 被 stop/remove 的宿主流程**，
+新包代码当时还没装上去。历史上 0.1.0→0.1.1→0.1.2→0.1.3 的每次 remove 都 1–3 秒
+完成，这次是 DSH 0.2.2-rc.1 新的原地更新路径第一次走就卡住。
+
+### 插件能修的部分：停得干净
+
+- 宿主 `bundle/index.js` 增加一个卸载 effect：中断 `downloadJob`、清
+  `inflightChecks`、`release()` 已打开的 ONNX 会话、重置 `current`/`lastCheck`；
+  路由注销仍由原来的 effect 负责。
+- 客户端模型检查的 effect cleanup 补上 abort 在途 fetch（组件被 HMR 销毁时别把
+  请求留在网络上）；配置桥本来就在 `ctx.inject` / `scope.effect` 里自动 detach。
+- 新增 `tools/uninstall-test.mjs`（13 项）：真的起一个**永不响应**的本地 HTTP
+  下载源，验证「下载中卸载会中断连接、不残留 `.part`、重复 dispose 不抛、
+  卸载后能重新 apply（等价升级后新代码启动）」。
+- `tools/client-config-wiring-test.mjs` 扩展 6 项：卸载时释放配置桥订阅、
+  重新 apply 后按同一命名空间重新接上。
+- README / CONTRIBUTING 写清升级路径，并记录 DSH 0.2.2-rc.1「更新」按钮的已知问题，
+  建议用「添加插件」覆盖安装或卸载后重装。
+
+### 插件修不了的部分
+
+卡住的 remove 在 DSH 宿主侧（`plugin-manager` 的 `updateBundle → removeBundle →
+HMR runExclusive / reconcileProfile`），该路径既没有超时也没有把中间态写进
+operation journal；插件只能保证自己可被干净卸载。现场证据（operation 无 settled、
+时间线、profile 半截状态）已整理，可作为 DSH 侧反馈材料。

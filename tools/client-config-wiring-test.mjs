@@ -176,8 +176,15 @@ function runClient(options = {}) {
     apply(fakeConfigForms) {
       const slots = []
       const injected = { namespaces: [], services: [] }
+      const disposers = []
+      /** 模拟 Cordis effect：调用并记住返回的 disposer，卸载时统一释放。 */
+      const keep = (fn) => {
+        const dispose = fn()
+        if (typeof dispose === 'function') disposers.push(dispose)
+        return dispose
+      }
       const ctx = {
-        effect: (fn) => { fn() },
+        effect: keep,
         locale: {
           register: () => () => {},
           bind: () => (key) => key,
@@ -190,7 +197,7 @@ function runClient(options = {}) {
           injected.services.push(...services)
           if (fakeConfigForms === null) return
           callback({
-            effect: (fn) => { fn() },
+            effect: keep,
             configForms: {
               get: (namespace) => {
                 injected.namespaces.push(namespace)
@@ -202,7 +209,16 @@ function runClient(options = {}) {
       }
       let error = null
       try { moduleExports.apply(ctx) } catch (failure) { error = failure }
-      return { slots, form, injected, error }
+      return {
+        slots,
+        form,
+        injected,
+        error,
+        /** DSH 升级前「停止旧版本」：逆序释放 effect（含配置桥订阅）。 */
+        dispose() {
+          while (disposers.length > 0) disposers.pop()()
+        },
+      }
     },
   }
 }
@@ -251,6 +267,25 @@ expect('bundle patch 里有 Loader 条目 id', typeof patchEntryId, 'string')
     run.form.mutations.map((ops) => ops.map((op) => [op.path[0], op.value])),
     [[['punctuation', false]]],
   )
+
+  // 卸载 / 升级：DSH 会先停掉旧版本（释放所有 effect），再装载新版本。
+  // 这里验证配置桥订阅会被释放，且重新 apply（新页面/新版本）能干净地再接上。
+  applied.dispose()
+  expect(
+    '卸载时释放配置桥（beacon 可见）',
+    run.beacons.some((message) => message.includes('settings bridge detached')),
+    true,
+  )
+  const reapplied = run.apply({ available: true })
+  await flush()
+  expect('升级后重新接上配置桥', reapplied.error, null)
+  expect('重新接上后命名空间不变', reapplied.injected.namespaces.at(-1), patchEntryId)
+  expect(
+    '桥接按新实例重新建立（attach 两次）',
+    run.beacons.filter((message) => message.includes('settings bridge attached to ' + patchEntryId)).length,
+    2,
+  )
+  reapplied.dispose()
 }
 
 // ---- 3. 旧版 DSH 没有 configForms：apply 仍成功，退回本地缓存 ----

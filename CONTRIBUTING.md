@@ -46,6 +46,7 @@ node src/demo.mjs                      # 真实错句
 node src/adversarial.mjs               # 正常句子误报
 node tools/config-schema-test.mjs      # 宿主 Config：字段、volatile、默认值（需 schemastery）
 node tools/client-config-wiring-test.mjs  # 客户端配置接线（加载构建产物，假 DSH 上下文）
+node tools/uninstall-test.mjs          # 卸载 / 升级生命周期（中断下载、释放资源、重新加载）
 node tools/model-service-test.mjs      # 下载 / 校验 / 分发 / 删除
 node tools/tokenizer-test.mjs          # 分词器与 transformers.js 逐 token 对齐
 node tools/infer-test.mjs              # 推理正确性
@@ -111,6 +112,21 @@ origin 隔离，所以存在里面的设置在重启/升级后一定丢失——
   原因；并发写用字段级序号防止旧失败覆盖新成功。
 - 旧版本 localStorage 里的设置会在首次接上 Host 时一次性迁移（只写与 Host 不同的
   字段），迁移后 Host 是唯一事实来源。
+
+## 卸载 / 升级生命周期
+
+DSH 原地更新插件时会先停掉旧版本（按 disposer 逆序释放所有 effect），再装载新版本；
+插件页的「更新」在当前 DSH 0.2.2-rc.1 上出现过卡在「停止并移除旧版本」的问题——
+那段是 DSH 更新器的流程，插件能做的是**保证自己停得干净**：
+
+- 宿主 `apply()` 用 `ctx.effect` 注册两块释放逻辑：路由注销（webServer 的 disposer）
+  和进程级资源（中断进行中的下载、清空合并表、`release()` 已打开的 ONNX 会话、
+  清缓存）。旧版本停掉后不能把 native 句柄/网络请求留在宿主里。
+- 客户端模型请求的 effect cleanup 会 abort 在途 fetch；配置桥的 `ctx.inject` /
+  `scope.effect` 在卸载时自动 detach。
+- `tools/uninstall-test.mjs` 真的起一个不响应的 HTTP 下载源，验证卸载会中断下载、
+  不残留 `.part`、重复 dispose 不抛、卸载后能重新 apply（等价于升级后新代码启动）。
+- 升级建议走「添加插件」覆盖安装或卸载后重装；重试同一个卡住的「更新」没有意义。
 
 ## 数据
 

@@ -598,7 +598,15 @@ window.__ModuleLoader__.load({
               })
             })
         }, MODEL_DEBOUNCE_MS)
-        return () => window.clearTimeout(timer)
+        return () => {
+          window.clearTimeout(timer)
+          // 卸载 / 升级（HMR 会销毁组件）时别把请求留在网络上；
+          // 下一次 effect 会按新文本重新发。
+          if (inflightRef.current !== null) {
+            try { inflightRef.current.abort() } catch { /* ignore */ }
+            inflightRef.current = null
+          }
+        }
       }, [draft, prefs.enabled, prefs.model, prefs.sensitivity])
 
       // Short drafts: check and measure synchronously, in the very paint that

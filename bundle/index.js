@@ -730,6 +730,31 @@ export function apply(ctx, refs) {
         throw error
       }
     }, 'zh-typo-check: model routes')
+
+    /**
+     * 卸载 / 升级（DSH 会先停掉旧版本再换新代码）时把长生命周期资源放掉。
+     *
+     * 路由由上面的 effect 负责注销；这里补上进程级资源：正在下载的网络请求、
+     * 合并表、已打开的 ONNX 会话。旧版本被停止后如果 native 句柄还挂在宿主进程里，
+     * 升级后新旧两代就会同时持有它，属于"卸载没做干净"。
+     */
+    ctx.effect(() => () => {
+      try {
+        if (downloadJob !== null) {
+          downloadJob.controller.abort()
+          downloadJob = null
+        }
+      } catch { /* 卸载不能因为清理失败而阻塞 */ }
+      inflightChecks.clear()
+      current = freshState()
+      lastCheck = null
+      const opened = cachedModel
+      cachedModel = null
+      cachedLexicon = undefined
+      try { opened?.model?.release?.() } catch { /* onnxruntime 版本可能没有 release */ }
+      bootLog('released: download aborted, model unloaded')
+    }, 'zh-typo-check: release on unload')
+
     void refreshFromDisk()
     inspectClientEntry(ctx)
     bootLog('apply done')
