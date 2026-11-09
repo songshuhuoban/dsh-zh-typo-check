@@ -1248,3 +1248,14 @@ text=你公司大佛IG你哦as士大夫回家英特人阿斯顿  → state=ready
 
 用户可能觉得「混排乱句也不给蓝线」是功能缺失；但实验功能在正确混排上 28% 的误报率
 更不可接受。混排场景保留的是确定性的错字检查，通顺度只在有把握的中文句子上出现。
+
+### 插曲：不要把 `file:` 本地 tarball 热装进运行中的 DSH
+
+本轮验证 0.2.3 时，把 `bundle/*.tgz` 用 `pnpm add file:...` 装进正在运行的 profile 并 HMR
+重载，宿主语义层报 `缺少 onnxruntime-node 推理运行时`（`/status runtime=false`），
+即使把 profile 依赖改回 registry 0.2.1、重新 toggle bundle 也没恢复；同样的
+`file:` 安装包在普通 node 里 `openModel()` 是正常的。判断是运行期模块解析/缓存被
+pnpm 重装与 HMR 换代搅乱，重启宿主才能清。
+
+结论：**给用户验证新版本时，走 npm registry 安装 + 重启 DSH**，不要用本地 tarball
+热装到运行中的宿主；本地包只适合离线/全新启动的环境。
