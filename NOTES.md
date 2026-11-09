@@ -1143,3 +1143,17 @@ DSH 插件页点「更新」0.1.3 → 0.2.0，弹窗是进度步骤：
 HMR runExclusive / reconcileProfile`），该路径既没有超时也没有把中间态写进
 operation journal；插件只能保证自己可被干净卸载。现场证据（operation 无 settled、
 时间线、profile 半截状态）已整理，可作为 DSH 侧反馈材料。
+
+### 0.2.1 在真实 DSH 环境验证 + DSH 更新器卡死定位（补充）
+
+- 用 DSH 自带 pnpm 把 0.2.1 装进 desktop profile（依赖 0.2.1、bundle 重新选中），
+  通过改 manifest 触发 HMR：`apply start ... settings={...}` → 客户端 `settings ready, 7 fields`，
+  配置（含迁移写入的 `fluency: true`）正常读取。
+- 对照实验：直接改 `dsh.profile.bundles` 卸载/重新启用 0.2.1，卸载日志
+  `released: download aborted, model unloaded` 在 0.2 秒内出现，重新启用 0.2 秒加载成功
+  → 插件自身卸载/热加载没问题。
+- 但 DSH 插件页「更新」两次都卡在「停止并移除旧版本」：operation journal 只有 `remove started`
+  无 settle；pnpm 日志显示 `pnpm install` 已返回「Already up to date」后无后续；强制重启后
+  profile 留下「bundles 已移除、依赖仍旧、node_modules 已删」的半截状态。
+- 结论：这是 DSH 0.2.2-rc.1 plugin-manager 更新路径的问题（插件运行中 remove 必卡、禁用时 remove 1.4s 成功）。
+  证据与规避方式整理在 [docs/DSH-更新器卡死-报障.md](docs/DSH-更新器卡死-报障.md)。
