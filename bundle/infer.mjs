@@ -67,10 +67,23 @@ export function closeModel() {
   }
 }
 
-/** 文本 → 模型输入；返回的 ids 与原文逐字对齐（中文一字一 token 时才成立）。 */
+/**
+ * 文本 → 模型输入。
+ *
+ * 之前这里要求「token 数 === 字符数」才算对齐；中英混排（UNbelievable、API、DSH）
+ * 里英文词会合并成少数 token，字符数与 token 数不等，于是整句被判定 not-aligned、
+ * 语义检查直接跳过——用户看到的现象就是「开了模型/通顺度却完全没反应」。
+ *
+ * 现在只要求**每个汉字都有自己的 token**，并返回 汉字下标 → token 下标 的映射；
+ * 英文词只是上下文，不参与掩码。`aligned` 仅表示"有没有汉字找不到 token"。
+ */
 export function encode(model, text) {
-  const ids = model.tokenizer.encode(text)
-  return { ids, aligned: ids.length === [...text].length }
+  const { ids, charToToken } = model.tokenizer.encodeWithPositions(text)
+  let aligned = true
+  for (let index = 0; index < text.length; index += 1) {
+    if (CJK.test(text[index]) && !charToToken.has(index)) { aligned = false; break }
+  }
+  return { ids, aligned, charToToken }
 }
 
 /**
@@ -135,15 +148,17 @@ export async function scoreIndex(model, ids, index, options = {}) {
  */
 export async function scan(model, text, options = {}) {
   const { minDelta = 10, maxPositions = 12, accept = null } = options
-  const { ids, aligned } = encode(model, text)
+  const { ids, aligned, charToToken } = encode(model, text)
   if (!aligned) return []
 
   const results = []
   let scanned = 0
   for (let index = 0; index < text.length && scanned < maxPositions; index += 1) {
     if (!CJK.test(text[index])) continue
+    const tokenIndex = charToToken.get(index)
+    if (tokenIndex === undefined) continue
     scanned += 1
-    const scored = await scoreIndex(model, ids, index, { topK: 40 })
+    const scored = await scoreIndex(model, ids, tokenIndex, { topK: 40 })
     if (scored.best === null) continue
 
     for (const candidate of scored.ranked) {

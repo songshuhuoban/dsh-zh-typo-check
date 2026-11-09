@@ -51,10 +51,47 @@ async function compare(text, label) {
 for (const row of CORPUS) await compare(row.text, row.kind)
 for (const text of EXTRA) await compare(text, 'extra')
 
+// ---- 位置映射：中英混排时英文词会合并 token，汉字仍必须能定位 ----
+// 之前 encode() 要求「token 数 === 字符合集」，混排直接判 not-aligned，
+// 语义检查整句跳过；这里钉住 encodeWithPositions 的映射语义。
+const MIXED = [
+  '我到上海住的还，可以用API测试',
+  '你公司大佛IG你哦as士大夫回家英特人阿斯顿',
+  'unbelievable 这是一个超长英文词',
+]
+const mappingFailures = []
+for (const text of MIXED) {
+  const ids = mine.encode(text)
+  const { ids: positioned, charToToken } = mine.encodeWithPositions(text)
+  const cjkIndices = []
+  for (let index = 0; index < text.length; index += 1) {
+    if (/[\u4e00-\u9fff]/.test(text[index])) cjkIndices.push(index)
+  }
+  const problems = []
+  if (!same(ids, positioned)) problems.push('ids 与 encode() 不一致')
+  if (charToToken.size !== cjkIndices.length) problems.push(`映射 ${charToToken.size} != 汉字 ${cjkIndices.length}`)
+  for (const index of cjkIndices) {
+    const tokenIndex = charToToken.get(index)
+    if (tokenIndex === undefined) { problems.push(`汉字@${index} 无映射`); continue }
+    const id = positioned[tokenIndex]
+    if (id !== mine.idOf(text[index]) && id !== mine.unk) problems.push(`汉字@${index} 映射到错误 token`)
+  }
+  checked += 1
+  if (problems.length > 0) mappingFailures.push({ text, problems })
+}
+
 console.log(`比对 ${checked} 句`)
-if (failures.length === 0) {
+if (failures.length === 0 && mappingFailures.length === 0) {
   console.log('全部一致')
   process.exit(0)
+}
+
+if (mappingFailures.length > 0) {
+  console.log(`${mappingFailures.length} 句位置映射失败：`)
+  for (const failure of mappingFailures) {
+    console.log(`\n  ${failure.text}`)
+    for (const problem of failure.problems) console.log(`    - ${problem}`)
+  }
 }
 
 console.log(`${failures.length} 句不一致：`)

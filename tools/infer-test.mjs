@@ -38,7 +38,22 @@ console.log(`  「还」原文=${scored.original.toFixed(2)}  前五: ` +
 check('首选是「话」', scored.best?.ch === '话', String(scored.best?.ch))
 check('单次推理 < 200 ms', elapsed < 200, `${elapsed} ms`)
 
-// ---- 2. 逐字扫描能定位到错字 ----
+// ---- 2. 中英混排：英文词会合并 token，但不能因此跳过整句语义检查 ----
+// 回归：用户输入「…的还，可以用API测试」时 encode 判 not-aligned，开了模型/通顺度也毫无反应。
+const MIXED = '我到上海住的还，可以用API测试'
+const mixedEncoded = encode(model, MIXED)
+const mixedHai = MIXED.indexOf('还')
+const mixedToken = mixedEncoded.charToToken.get(mixedHai)
+check('中英混排仍对齐（每个汉字有 token）', mixedEncoded.aligned,
+  `${mixedEncoded.ids.length} tokens / ${[...MIXED].length} chars`)
+check('汉字能映射到 token 下标', Number.isInteger(mixedToken), String(mixedToken))
+const mixedScored = await scoreIndex(model, mixedEncoded.ids, mixedToken, { topK: 5 })
+const mixedHua = mixedScored.scoreOf('话')
+check('混排下「话」的分数明显高于原字',
+  mixedHua !== null && mixedHua - mixedScored.original >= 8,
+  `话=${mixedHua} 原字=${mixedScored.original}`)
+
+// ---- 3. 逐字扫描能定位到错字 ----
 const before = TEXT.indexOf('包斯')
 const hits = await scan(model, TEXT, { minDelta: 8, maxPositions: 20 })
 const hitText = hits.map((h) => `${h.original}→${h.candidate}(${h.delta.toFixed(1)})`).join(' ')

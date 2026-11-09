@@ -73,14 +73,17 @@ export async function checkText(model, lexicon, text, options = {}) {
   }
   union.sort((a, b) => a - b)
 
-  const { ids, aligned } = encode(model, text)
+  const { ids, aligned, charToToken } = encode(model, text)
   if (!aligned) return []
 
   const accept = lexicon === null ? null : (ch, index) => plausible(lexicon, text, index, ch)
   const scored = new Map()
   for (const index of union) {
     if (index < 0 || index >= text.length) continue
-    const row = await scoreIndex(model, ids, index, { topK: 40 })
+    // 汉字 → token 下标；英文词等非汉字不参与掩码
+    const tokenIndex = charToToken.get(index)
+    if (tokenIndex === undefined) continue
+    const row = await scoreIndex(model, ids, tokenIndex, { topK: 40 })
     scored.set(index, row)
     // 顺带把「模型对原文这个字的评分」交出去：通顺度就是这些分数的平均，
     // 不需要再跑第二轮推理。

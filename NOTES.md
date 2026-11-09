@@ -1157,3 +1157,52 @@ operation journal；插件只能保证自己可被干净卸载。现场证据（
   profile 留下「bundles 已移除、依赖仍旧、node_modules 已删」的半截状态。
 - 结论：这是 DSH 0.2.2-rc.1 plugin-manager 更新路径的问题（插件运行中 remove 必卡、禁用时 remove 1.4s 成功）。
   证据与规避方式整理在 [docs/DSH-更新器卡死-报障.md](docs/DSH-更新器卡死-报障.md)。
+
+## 三十六、中英混排让整个语义层静默失效（0.2.2）
+
+### 现象
+
+用户打开「整句通畅度」后输入一句中英混排的乱句（`你公司大佛IG你哦as士大夫回家英特人阿斯顿`），
+既没有下划线也没有蓝色虚线，看起来「配置/模型完全没生效」。但宿主 `/zh-typo-model/status`
+显示模型已就绪、`lastCheck` 里也能看到模型跑过用户的其他句子。
+
+### 根因
+
+`src/infer.mjs` 原来的「对齐」判定是：
+
+```js
+const ids = model.tokenizer.encode(text)
+return { ids, aligned: ids.length === [...text].length }
+```
+
+要求 **token 数 === 字符数**。但 BERT 的 BasicTokenizer 会把连续 ASCII 字母合成一个词，
+`IG`/`as`/`API` 这类英文词会压成 1~2 个 token：「token 数 < 字符数」→ `aligned: false`
+→ `checker.checkText()` 和 `scan()` 都在打分前直接 `return []`，整句语义检查（含通顺度）
+被静默跳过，界面上什么都不会出现。纯中文句子不受影响，所以问题只在混排时暴露。
+
+用宿主 `/check` 直接复现：
+
+```
+text=你公司大佛IG你哦as士大夫回家英特人阿斯顿  → state=ready reason=not-aligned issues=[] fluency=null 3ms
+```
+
+### 修法：只要求「每个汉字有自己的 token」
+
+- `src/tokenizer.mjs` 新增 `basicTokenizeSpans()` / `encodeWithPositions()`：
+  分词时记录每个 token 在原文里的起始偏移，返回 `charToToken`（汉字 UTF-16 下标 → token 下标）。
+- `src/infer.mjs` 的 `encode()` 改为返回 `{ ids, aligned, charToToken }`；
+  `aligned` 只表示「有没有汉字找不到 token」（正常文本恒为 true）。
+- `scoreIndex()` 仍收 token 下标；`scan()` / `checker.checkText()` 先用 `charToToken.get(汉字下标)`
+  换成 token 下标再掩码。英文词只作为上下文，不参与掩码。
+- 分词结果本身不变（`encodeWithPositions().ids === encode()`），与 transformers.js
+  的逐 token 对齐测试仍然全过。
+
+### 验证
+
+- `tools/tokenizer-test.mjs`：新增位置映射断言（汉字全部有映射、映射到正确 token、
+  ids 与旧 encode 一致），88 句对照 transformers.js 全一致。
+- `tools/infer-test.mjs`：新增「中英混排仍对齐 / 汉字可映射 / 混排下「话」分数明显高于原字」。
+- `tools/infer-route-test.mjs`：新增三个端到端断言——混排句仍抓到 `还→话`、混排乱句返回通顺度、
+  且 `low=true`（真实模型 `avg=6.78`，正常句 17.35）。
+- 修复后同一句中英混排文本：`aligned=true`、9 个位置参与打分、通顺度 `avg=6.78 low=true`，
+  蓝色虚线会正常出现；`我到上海住的还，可以用API测试` 也能报 `还→话`。

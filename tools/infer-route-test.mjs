@@ -138,7 +138,16 @@ const fluencyOf = async (text) => {
 }
 const normal = await fluencyOf('今天的天气不错，我们去公园走走吧。')
 const garbled = await fluencyOf('第五个i红啊数据库更好')
-console.log(`  正常 ${normal?.avg}，乱敲 ${garbled?.avg}（阈值 ${normal?.threshold}）`)
+// 中英混排：英文词会让 token 数 ≠ 字符数；之前整句被判 not-aligned 直接跳过，
+// 用户看到的就是「开了模型/通顺度也完全没反应」。
+const mixed = await call('check?text=' + encodeURIComponent('我到上海住的还，可以用API测试') + '&delta=12')
+check('中英混排仍能抓到「还」→「话」',
+  mixed.body.aligned === true && mixed.body.issues.some((i) => i.original === '还' && i.candidate === '话'),
+  JSON.stringify({ aligned: mixed.body.aligned, issues: mixed.body.issues }))
+const mixedGarbled = await fluencyOf('你公司大佛IG你哦as士大夫回家英特人阿斯顿')
+check('中英混排乱句仍返回通顺度', mixedGarbled !== null && mixedGarbled.samples > 0, JSON.stringify(mixedGarbled))
+check('中英混排乱句被判为不通顺', mixedGarbled !== null && mixedGarbled.low === true, String(mixedGarbled?.avg))
+console.log(`  正常 ${normal?.avg}，乱敲 ${garbled?.avg}，混排乱句 ${mixedGarbled?.avg}（阈值 ${normal?.threshold}）`)
 check('正常句不被判为不通顺', normal !== null && normal.low === false, String(normal?.avg))
 check('乱敲句被判为不通顺', garbled !== null && garbled.low === true, String(garbled?.avg))
 check('通顺度来自已有打分（有采样数）', normal !== null && normal.samples > 0, String(normal?.samples))

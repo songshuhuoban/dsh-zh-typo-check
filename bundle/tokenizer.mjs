@@ -22,22 +22,37 @@ const CJK = /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/
  *
  * 最后一条很容易写错：把全角字母当"标点"单独切出来，就查不到词表里的整词，
  * 只能得到一串 [UNK]。和 transformers.js 对齐测试专门盯这一类。
+ *
+ * 带 span 的版本额外记录每个 token 在原文里的起始偏移（UTF-16 单元），
+ * 供 `encodeWithPositions` 建立「汉字下标 → token 下标」的映射。
+ * `unbelievable 这是一个超长英文词` 这类中英混排里，英文词会合成一个 token，
+ * 字符数与 token 数不再相等——没有映射就没法定位该遮哪个字。
  */
-function basicTokenize(text, lowerCase) {
+function basicTokenizeSpans(text, lowerCase) {
   const out = []
   let buffer = ''
+  let bufferStart = 0
+  let offset = 0
   const flush = () => {
-    if (buffer !== '') { out.push(buffer); buffer = '' }
+    if (buffer !== '') { out.push({ text: buffer, start: bufferStart, cjk: false }); buffer = '' }
   }
   for (const ch of text) {
+    const start = offset
+    offset += ch.length
     const code = ch.codePointAt(0)
     if (code === 0 || code === 0xfffd || /\s/u.test(ch)) { flush(); continue }
-    if (CJK.test(ch)) { flush(); out.push(ch); continue }
-    if (isPunctuation(ch)) { flush(); out.push(ch); continue }
+    if (CJK.test(ch)) { flush(); out.push({ text: ch, start, cjk: true }); continue }
+    if (isPunctuation(ch)) { flush(); out.push({ text: ch, start, cjk: false }); continue }
+    if (buffer === '') bufferStart = start
     buffer += lowerCase ? ch.toLowerCase() : ch
   }
   flush()
   return out
+}
+
+/** 只要 token 文本的旧接口（与 transformers.js 的逐 token 对齐测试在用）。 */
+function basicTokenize(text, lowerCase) {
+  return basicTokenizeSpans(text, lowerCase).map((token) => token.text)
 }
 
 /**
@@ -102,6 +117,23 @@ export async function loadTokenizer(dir) {
       const ids = []
       for (const token of basicTokenize(text, lowerCase)) ids.push(...wordpiece(token, vocab, unk))
       return ids
+    },
+    /**
+     * 分词 + 汉字位置映射。
+     *
+     * @returns {{ids: number[], charToToken: Map<number, number>}}
+     *   `charToToken[汉字在原文里的 UTF-16 下标] = 该字在 ids 里的下标`。
+     *   英文单词会合并成若干 token，所以只给汉字建映射（掩码打分只遮汉字）。
+     */
+    encodeWithPositions(text) {
+      const ids = []
+      const charToToken = new Map()
+      for (const token of basicTokenizeSpans(text, lowerCase)) {
+        const pieces = wordpiece(token.text, vocab, unk)
+        if (token.cjk) charToToken.set(token.start, ids.length)
+        ids.push(...pieces)
+      }
+      return { ids, charToToken }
     },
     /** 加上 [CLS]/[SEP]，供模型直接使用 */
     encodeForModel(text) {
