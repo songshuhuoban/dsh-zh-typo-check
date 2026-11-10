@@ -1,0 +1,71 @@
+{
+  "recorded_at_utc": "2026-11-10T08:41:30.166403+00:00",
+  "status": "published-next-latest-promotion-needs-new-npm-2fa",
+  "version": "0.3.0",
+  "dist_tags": {
+    "latest": "0.2.3",
+    "next": "0.3.0"
+  },
+  "source_commit": "58664c60c6695ceb59bd66745ef4b2f5fa97e3ac",
+  "merged_commit": "8d833cf53d45c6c14066fa6a0aea7dd173c7efc4",
+  "pull_request": "https://github.com/songshuhuoban/dsh-zh-typo-check/pull/1",
+  "release": "https://github.com/songshuhuoban/dsh-zh-typo-check/releases/tag/v0.3.0",
+  "npm_tarball": "https://registry.npmjs.org/dsh-zh-typo-check/-/dsh-zh-typo-check-0.3.0.tgz",
+  "npm_integrity": "sha512-8MafcS4BYjGtqHOT99ZV/peGUozEMXoZsD+SG4+PUI31S3yrnxxswJA+8FYqRTLN7hlEmcdbWNFx6P2vwAnSeA==",
+  "npm_tarball_bytes": 1232132,
+  "matched_candidate_files": 25,
+  "model_release": "https://github.com/songshuhuoban/dsh-zh-typo-check/releases/tag/r13-model-20261110",
+  "model_sha256": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+  "model_bytes": 27092583,
+  "native_runtime": "1.30.0",
+  "staging": {
+    "at_utc": "2026-11-10T08:34:04.567254+00:00",
+    "origin": "http://127.0.0.1:63801",
+    "version": "0.3.0",
+    "installed_25_files_match": true,
+    "native_runtime": "1.30.0",
+    "model_bytes": 27092583,
+    "model_sha256": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+    "optional_typo_model": "absent",
+    "checks": [
+      {
+        "name": "original",
+        "warning": true,
+        "score": 13.770684242248535
+      },
+      {
+        "name": "mixed-normal",
+        "warning": false,
+        "score": -9.164060592651367
+      },
+      {
+        "name": "english-normal",
+        "warning": false,
+        "score": -21.913278579711914
+      }
+    ],
+    "long_input": "unavailable-without-truncation"
+  },
+  "tokenizer_parity_comparisons": 4700,
+  "known_regression_score_parity_rows": 675,
+  "score_drift": 0,
+  "decision_differences": 0,
+  "passed_commands": [
+    "npm test",
+    "npm run config:test",
+    "npm run model:test",
+    "npm run infer:test",
+    "npm run resilience",
+    "npm run semantic:test"
+  ],
+  "actual_ui": [
+    "registry install",
+    "native dependency script approval and retry",
+    "enable",
+    "download published R13",
+    "restart on a new port",
+    "original warning without automatic rewrite"
+  ],
+  "product_acceptance": "engineering checks passed; user product acceptance pending",
+  "remaining": "npm latest dist-tag needs a fresh user-completed 2FA flow; expired links must not be reused"
+}

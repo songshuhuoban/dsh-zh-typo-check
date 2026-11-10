@@ -42,6 +42,14 @@ registry 压缩包 1,232,132 字节，SHA-1 `3a15b47cabf51547aa11cb99d130e87dbf1
 
 正式默认标签的提升属于 npm 单独的双重验证操作；最终标签与源码合并记录随发布完成追加。已结束首轮本地压缩包宿主，保留此 registry 版本验收环境。
 
+## 发布检查点
+
+PR [#1](https://github.com/songshuhuoban/dsh-zh-typo-check/pull/1) 已合并，main 合并提交 `8d833cf53d45c6c14066fa6a0aea7dd173c7efc4`；[GitHub v0.3.0](https://github.com/songshuhuoban/dsh-zh-typo-check/releases/tag/v0.3.0) 已公开发布。
+
+此检查点 **next=0.3.0、latest=0.2.3**。0.3.0 上传已完成，但提升默认标签时 npm 再次要求独立浏览器 2FA；该次链接已过期，操作未完成。现在可直接安装 `dsh-zh-typo-check@0.3.0`。恢复时重新发起 `npm dist-tag add dsh-zh-typo-check@0.3.0 latest --registry=https://registry.npmjs.org --auth-type=web`，由用户在新页面完成验证，再查询标签并更新此检查点；不能重用过期链接或把 next 发布冒充默认版本已更新。
+
+可机读核对入口：`data/release-0.3.0-verification.json`。工程交付进入待产品验收，尚不代表用户已完成产品验收。
+
 ## 自动验证
 
 `npm test`、`npm run config:test`、`npm run model:test`、`npm run infer:test`、`npm run resilience`、`npm run semantic:test` 通过。整句测试使用真实固定权重，覆盖下载、错误、取消、删除、整句/错字独立路由、超长弃权与 profile 隔离。
