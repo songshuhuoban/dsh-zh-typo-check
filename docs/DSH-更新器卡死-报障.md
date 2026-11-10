@@ -122,3 +122,5 @@ Already up to date
 新增 [tools/repair-upgrade.ps1](../tools/repair-upgrade.ps1) 与[恢复步骤](升级卡死恢复.md)。在全新的无账号 profile 模拟同样半截状态，使用官方 CLI 从 npm 安装精确 `0.3.0`，补回启用记录；原有偏好文件和 27,092,583 字节的真实 R13 模型 SHA-256 不变，无关 manifest 字段保留，启用条目只出现一次。恢复后的真实 DSH Host 启动并注册检查路由成功，原问题句得到 R13 warning=true、margin=13.770684242248535。验证时间 `2026-11-10T09:05:42Z`，临时本机测试服务在验证后停止。
 
 脚本在真实桌面进程仍运行时拒绝执行；测试前后核对真实 desktop manifest 字节相同。本节仅证明离线恢复路径，未修改已安装的 app.asar，也未声称已经修好 DSH 的热更新实现。真实 desktop 的恢复与验收另在对应 issue 记录。
+
+Windows PowerShell 5.1 与 PowerShell 7 均实际执行恢复通过；已覆盖重复安装已有0.3.0但未启用的恢复分支。脚本可先用 `-PlanOnly` 预览。
