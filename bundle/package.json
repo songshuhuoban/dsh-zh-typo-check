@@ -1,6 +1,6 @@
 {
   "name": "dsh-zh-typo-check",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "DSH 本地中文错字、标点与中英文混排整句异常检查。",
   "keywords": [
     "dsh",
@@ -40,6 +40,9 @@
     "semantic-tokenizer.mjs",
     "semantic.mjs",
     "semantic-service.mjs",
+    "model-service.mjs",
+    "model-process.mjs",
+    "model-worker.mjs",
     "data/*.txt",
     "cordis.patch.yml",
     "locale/*.json",
