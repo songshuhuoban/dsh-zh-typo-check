@@ -1,0 +1,307 @@
+{
+  "issue": "SIM-1053",
+  "recorded_at_utc": "2026-11-10T10:11:57.647561+00:00",
+  "status": "candidate-0.3.1-engineering-verified-product-review-pending",
+  "harness_version": "0.2.2-rc.1",
+  "harness_source_tag": "66491b05e3f05ad35bcdd4f6cd7ed26041d9e3db",
+  "problem": "Windows image mapping keeps onnxruntime.dll and native binding busy in Host; real pnpm remove stalls after plugin reload completes",
+  "fix": "Model service in a lazy private IPC child; Cordis disposal awaits child close before pnpm removes the package",
+  "plugin_candidate": "0.3.1",
+  "npm_published": false,
+  "actual_user_desktop_changed": false,
+  "actual_user_desktop_version": "0.3.0",
+  "upstream_signed_runtime_modified": false,
+  "upstream_ui_failure_display_fixed": false,
+  "upstream_report_sent": false,
+  "artifact": {
+    "filename": "dsh-zh-typo-check-0.3.1.tgz",
+    "bytes": 1233335,
+    "sha256": "6704726aca4dfee273497842834a219a07f6a00f4541a0bbfb370693ba233c36",
+    "shasum": "c0682920abf56e5d08b4bddbf622f811c0af995a"
+  },
+  "trials": {
+    "unloaded_control": {
+      "at_utc": "2026-11-10T09:48:24.478757+00:00",
+      "seconds": 7.286032499978319,
+      "application": "applied",
+      "phase": "install",
+      "timed_out": false,
+      "version": null,
+      "candidate_source": false,
+      "settings_preserved": null,
+      "models_preserved": null,
+      "range_streaming": null,
+      "steady_median_ms": null,
+      "probes": null,
+      "locks_before_remove": null
+    },
+    "loaded_original": {
+      "at_utc": "2026-11-10T09:48:51.721191+00:00",
+      "seconds": 8.603240399970673,
+      "application": "failed",
+      "phase": "remove",
+      "timed_out": true,
+      "version": null,
+      "candidate_source": false,
+      "settings_preserved": null,
+      "models_preserved": null,
+      "range_streaming": null,
+      "steady_median_ms": null,
+      "probes": null,
+      "locks_before_remove": null
+    },
+    "full_models_released_030": {
+      "at_utc": "2026-11-10T10:00:45.925381+00:00",
+      "seconds": 7.2732535999966785,
+      "application": "failed",
+      "phase": "remove",
+      "timed_out": true,
+      "version": "0.3.0",
+      "candidate_source": false,
+      "settings_preserved": true,
+      "models_preserved": true,
+      "range_streaming": true,
+      "steady_median_ms": 18.584500008728355,
+      "probes": [
+        {
+          "warning": true,
+          "score": 13.770684242248535,
+          "seconds": 1.0132364999735728
+        },
+        {
+          "warning": false,
+          "score": -9.164060592651367,
+          "seconds": 0.01585790002718568
+        },
+        {
+          "warning": false,
+          "score": -21.913278579711914,
+          "seconds": 0.0368472000118345
+        }
+      ],
+      "locks_before_remove": [
+        [
+          {
+            "name": "napi-v6\\win32\\x64\\DirectML.dll",
+            "writable": true
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\dxcompiler.dll",
+            "writable": true
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\dxil.dll",
+            "writable": true
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\onnxruntime.dll",
+            "writable": false,
+            "code": "EBUSY"
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\onnxruntime_binding.node",
+            "writable": false,
+            "code": "EBUSY"
+          }
+        ]
+      ]
+    },
+    "candidate_source_full_hot_update": {
+      "at_utc": "2026-11-10T10:05:39.855908+00:00",
+      "seconds": 8.12550409999676,
+      "application": "applied",
+      "phase": "install",
+      "timed_out": false,
+      "version": "0.2.3",
+      "candidate_source": true,
+      "settings_preserved": true,
+      "models_preserved": true,
+      "range_streaming": true,
+      "steady_median_ms": 13.934850052464753,
+      "probes": [
+        {
+          "warning": true,
+          "score": 13.770684242248535,
+          "seconds": 1.0150224999524653
+        },
+        {
+          "warning": false,
+          "score": -9.164060592651367,
+          "seconds": 0.031150899943895638
+        },
+        {
+          "warning": false,
+          "score": -21.913278579711914,
+          "seconds": 0.031556100002489984
+        }
+      ],
+      "locks_before_remove": [
+        [
+          {
+            "name": "napi-v6\\win32\\x64\\DirectML.dll",
+            "writable": true
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\dxcompiler.dll",
+            "writable": true
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\dxil.dll",
+            "writable": true
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\onnxruntime.dll",
+            "writable": true
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\onnxruntime_binding.node",
+            "writable": true
+          }
+        ]
+      ]
+    },
+    "exact_artifact_cold_install_and_remove": {
+      "at_utc": "2026-11-10T10:09:04.176660+00:00",
+      "seconds": 2.026901700068265,
+      "application": "applied",
+      "phase": "remove",
+      "timed_out": false,
+      "version": "0.3.1",
+      "candidate_source": false,
+      "settings_preserved": true,
+      "models_preserved": true,
+      "range_streaming": true,
+      "steady_median_ms": 12.59360002586618,
+      "probes": [
+        {
+          "warning": true,
+          "score": 13.770684242248535,
+          "seconds": 0.9414029000326991
+        },
+        {
+          "warning": false,
+          "score": -9.164060592651367,
+          "seconds": 0.01346350007224828
+        },
+        {
+          "warning": false,
+          "score": -21.913278579711914,
+          "seconds": 0.011073599918745458
+        }
+      ],
+      "locks_before_remove": [
+        [
+          {
+            "name": "napi-v6\\win32\\x64\\DirectML.dll",
+            "writable": true
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\dxcompiler.dll",
+            "writable": true
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\dxil.dll",
+            "writable": true
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\onnxruntime.dll",
+            "writable": true
+          },
+          {
+            "name": "napi-v6\\win32\\x64\\onnxruntime_binding.node",
+            "writable": true
+          }
+        ]
+      ]
+    }
+  },
+  "physical_lock_probe": {
+    "locks_before_import": [
+      {
+        "name": "napi-v6\\win32\\x64\\DirectML.dll",
+        "writable": true
+      },
+      {
+        "name": "napi-v6\\win32\\x64\\dxcompiler.dll",
+        "writable": true
+      },
+      {
+        "name": "napi-v6\\win32\\x64\\dxil.dll",
+        "writable": true
+      },
+      {
+        "name": "napi-v6\\win32\\x64\\onnxruntime.dll",
+        "writable": true
+      },
+      {
+        "name": "napi-v6\\win32\\x64\\onnxruntime_binding.node",
+        "writable": true
+      }
+    ],
+    "locks_after_import": [
+      {
+        "name": "napi-v6\\win32\\x64\\DirectML.dll",
+        "writable": true
+      },
+      {
+        "name": "napi-v6\\win32\\x64\\dxcompiler.dll",
+        "writable": true
+      },
+      {
+        "name": "napi-v6\\win32\\x64\\dxil.dll",
+        "writable": true
+      },
+      {
+        "name": "napi-v6\\win32\\x64\\onnxruntime.dll",
+        "writable": false,
+        "code": "EBUSY"
+      },
+      {
+        "name": "napi-v6\\win32\\x64\\onnxruntime_binding.node",
+        "writable": false,
+        "code": "EBUSY"
+      }
+    ]
+  },
+  "performance": {
+    "method": "Single-machine loopback HTTP, 20 alternating frozen R13 probes after warmup; both optional MLM and R13 loaded for working-set measurement",
+    "baseline_030_median_ms": 18.584500008728355,
+    "initial_candidate_median_ms": 19.138150033541024,
+    "final_artifact_median_ms": 12.59360002586618,
+    "baseline_030_working_set_bytes": 583262208,
+    "initial_candidate_host_and_worker_working_set_bytes": 657502208,
+    "final_artifact_host_and_worker_working_set_bytes": 653037568,
+    "limitation": "Point-in-time Windows working sets, not private memory or a simultaneous whole-machine peak. Latency varied across runs; no universal speed claim."
+  },
+  "checks": [
+    "npm test",
+    "real R13 semantic product lifecycle",
+    "real MLM and semantic check routes",
+    "broken inference module degradation",
+    "crash recovery and request timeout",
+    "graceful and repeated disposal",
+    "parent exit closes worker and unlocks physical native files",
+    "exact package cold install, full models and native package removal",
+    "real registry update with candidate source as old version",
+    "Range streaming",
+    "settings and model hashes preserved",
+    "oxlint correctness rules on changed Host code and test fixtures",
+    "browser UI shows v0.3.1, running and both models ready"
+  ],
+  "staging": {
+    "origin": "http://127.0.0.1:56906",
+    "version": "0.3.1",
+    "deployed_at_utc": "2026-11-10T10:09:23.357374+00:00",
+    "original_warning": true,
+    "original_score": 13.770684242248535,
+    "normal_mixed_warning": false,
+    "english_warning": false,
+    "legacy_typo": true,
+    "range_streaming": true,
+    "browser_ui_verified": true,
+    "no_account": true
+  },
+  "migration": "Exit DSH once before replacing 0.3.0 or earlier, since their native DLLs are already mapped in the old Host",
+  "reproducer": "tools/dsh-upgrade-smoke.py",
+  "private_raw_evidence": ".research/updater/"
+}

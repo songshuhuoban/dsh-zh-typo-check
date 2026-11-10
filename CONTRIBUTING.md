@@ -7,7 +7,10 @@
 
 ```
 bundle/             可发布的插件包（npm 就是发这个目录）
-  index.js          宿主半边：模型下载 / 校验 / 分发 / 检查路由 + 插件 Config
+  index.js          DSH 插件 Config、模型文件流分发与 IPC 路由
+  model-process.mjs 私有 IPC 桥；卸载等待原生子进程退出
+  model-worker.mjs  模型服务进程入口，不启动额外 DSH 或监听端口
+  model-service.mjs 模型下载 / 校验 / 推理，原有模型判据不变
   client.js         页面半边：下划线、气泡、设置页（构建产物，勿手改）
   tokenizer.mjs     BERT 分词器（与 transformers.js 逐 token 对齐）
   infer.mjs         掩码打分
@@ -47,6 +50,7 @@ node src/adversarial.mjs               # 正常句子误报
 node tools/config-schema-test.mjs      # 宿主 Config：字段、volatile、默认值（需 schemastery）
 node tools/client-config-wiring-test.mjs  # 客户端配置接线（加载构建产物，假 DSH 上下文）
 node tools/uninstall-test.mjs          # 卸载 / 升级生命周期（中断下载、释放资源、重新加载）
+node tools/model-process-test.mjs      # 真实原生库占用、崩溃恢复、超时、父进程退出
 node tools/model-service-test.mjs      # 下载 / 校验 / 分发 / 删除
 node tools/tokenizer-test.mjs          # 分词器与 transformers.js 逐 token 对齐
 node tools/infer-test.mjs              # 推理正确性
@@ -60,6 +64,8 @@ node tools/host-eval.mjs all           # 产品路径的精确率 / 召回率
 假 configForms + 真实构建产物」，所以不打开页面也能验证 `configForms` 的命名空间、
 写回与迁移路径。`tools/config-schema-test.mjs` 依赖开发依赖
 `@deepseek-ai/schemastery`：没装时打印 SKIP 并以 0 退出（`pnpm install` 后即生效）。
+
+Windows 包移除还必须通过 `tools/dsh-upgrade-smoke.py` 的真实官方 CLI profile 验证，见[复验命令](docs/DSH-更新器卡死-报障.md#复验)。假上下文卸载和模型 `release()` 不能证明 DLL 已解除占用。进程测试使用独立物理运行时文件，避免其他并行推理试验影响文件占用断言。模型文件分发保留 Host 侧 Range 流，不经 IPC 复制。
 
 **一个踩过的坑**：`webServer.register({ kind: 'prefix', path })` 的 `path` **不能带尾斜杠**。
 匹配规则是 `pathname === prefix || pathname.startsWith(prefix + '/')`，

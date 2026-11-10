@@ -59,7 +59,7 @@ fs.writeFileSync(path.join(outDir, 'client.js'), output, 'utf8')
 console.log('build-client: bundle/client.js <- src/{core,editor,config-store}.mjs + src/client.js')
 
 // 宿主侧：推理与分词保持为独立模块，由 index.js 直接 import
-const HOST_MODULES = ['core.mjs', 'tokenizer.mjs', 'infer.mjs', 'lexicon.mjs', 'l1.mjs', 'checker.mjs', 'semantic-tokenizer.mjs', 'semantic.mjs', 'semantic-service.mjs']
+const HOST_MODULES = ['core.mjs', 'tokenizer.mjs', 'infer.mjs', 'lexicon.mjs', 'l1.mjs', 'checker.mjs', 'semantic-tokenizer.mjs', 'semantic.mjs', 'semantic-service.mjs', 'model-service.mjs', 'model-process.mjs', 'model-worker.mjs']
 for (const file of HOST_MODULES) {
   fs.copyFileSync(path.join(root, 'src', file), path.join(outDir, file))
 }

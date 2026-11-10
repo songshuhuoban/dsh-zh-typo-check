@@ -60,10 +60,11 @@ export async function openModel(dir) {
   return loaded
 }
 
-export function closeModel() {
+export async function closeModel() {
   if (loaded !== null) {
-    void loaded.session.release()
+    const previous = loaded
     loaded = null
+    await previous.session.release()
   }
 }
 
