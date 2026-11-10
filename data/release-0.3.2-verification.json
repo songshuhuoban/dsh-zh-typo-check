@@ -1,0 +1,145 @@
+{
+  "issue": "SIM-1054",
+  "recorded_at_utc": "2026-11-10T12:02:07.790318+00:00",
+  "status": "released-registry-cold-install-verified-product-review-pending",
+  "version": "0.3.2",
+  "source_commit": "5580ba2dff607491bab26de27c17d4bc51c6ca49",
+  "pr": {
+    "number": 4,
+    "url": "https://github.com/songshuhuoban/dsh-zh-typo-check/pull/4",
+    "merged_at_utc": "2026-11-10T11:51:38Z"
+  },
+  "tag": "v0.3.2",
+  "npm": {
+    "at_utc": "2026-11-10T11:54:48.987677+00:00",
+    "version": "0.3.2",
+    "dist_tags": {
+      "next": "0.3.0",
+      "latest": "0.3.2"
+    },
+    "git_head": null,
+    "source_commit": "5580ba2dff607491bab26de27c17d4bc51c6ca49",
+    "sha256": "a7ac5826e21cfdb3f67e94addd615ea47dab707016598f5c5f2f0ff6b2f60325",
+    "sha1": "2394924c6e1fc08a08fed8fb5afb7019f2d57cce",
+    "integrity": "sha512-T3Uayyf0b+g+0wv8xVaCy7KPAoLATUkq7bVP9b+Cnxy/8f0/cVCGJhuodxg4Ha9ChkdZ0d+D9iQFc6TPGJcy/g==",
+    "bytes": 1232528,
+    "files": 28,
+    "exact_preflight_payload": true,
+    "official_tarball": "https://registry.npmjs.org/dsh-zh-typo-check/-/dsh-zh-typo-check-0.3.2.tgz",
+    "all_files_match_source_after_normalizing_text_line_endings": true
+  },
+  "preflight": {
+    "version": "0.3.2",
+    "files": 28,
+    "changed_since_tested_candidate": [
+      "package.json"
+    ],
+    "only_version_changed": true,
+    "runtime_and_models_unchanged": true,
+    "bytes": 1232528,
+    "sha256": "a7ac5826e21cfdb3f67e94addd615ea47dab707016598f5c5f2f0ff6b2f60325",
+    "sha1": "2394924c6e1fc08a08fed8fb5afb7019f2d57cce",
+    "sha512": "4f751acb27f46fe83ed30bfcc55682cbb28f0282c04d492aedb54ff5bf829f1cbff1fd3f715086261ba87718381daf42864759d1df83f6240573a4cf189732fe"
+  },
+  "github_release": {
+    "url": "https://github.com/songshuhuoban/dsh-zh-typo-check/releases/tag/v0.3.2",
+    "draft": false,
+    "prerelease": false,
+    "assets": [
+      "dsh-zh-typo-check-0.3.2.tgz",
+      "repair-upgrade.ps1",
+      "upgrade-recovery.md"
+    ],
+    "downloaded_assets_exact_match": true,
+    "final_recovery_asset_reverified_at_utc": "2026-11-10T12:03:04.174641+00:00"
+  },
+  "cold_registry_install": {
+    "version": "0.3.2",
+    "installed_spec": "dsh-zh-typo-check@0.3.2",
+    "at_utc": "2026-11-10T12:00:31.575434+00:00",
+    "origin": "http://127.0.0.1:60364",
+    "installed_files_exact_match": 28,
+    "probes": [
+      {
+        "warning": true,
+        "score": 13.770684242248535,
+        "seconds": 0.9919244999764487
+      },
+      {
+        "warning": false,
+        "score": -9.164060592651367,
+        "seconds": 0.028518600040115416
+      },
+      {
+        "warning": false,
+        "score": -21.913278579711914,
+        "seconds": 0.031634400016628206
+      }
+    ],
+    "legacy_typo_preserved": true,
+    "range_streaming": true,
+    "consistency_cases": [
+      {
+        "text": "这个方案有点危显是的管理开始地灵龛你看了",
+        "warning": true,
+        "score": 10.493962287902832,
+        "raw_candidates": [
+          {
+            "index": 6,
+            "original": "危",
+            "candidate": "凸",
+            "delta": 15.476870775222778,
+            "route": "B"
+          },
+          {
+            "index": 7,
+            "original": "显",
+            "candidate": "险",
+            "delta": 13.79482638835907,
+            "route": "A"
+          }
+        ]
+      },
+      {
+        "text": "这个方案有点危显，需要再评估风险。",
+        "warning": false,
+        "score": -8.601860046386719,
+        "raw_candidates": [
+          {
+            "index": 7,
+            "original": "显",
+            "candidate": "险",
+            "delta": 18.437915921211243,
+            "route": "A"
+          }
+        ]
+      },
+      {
+        "text": "这个方案有点危险，我们需要再讨论一下。",
+        "warning": false,
+        "score": -15.490423202514648,
+        "raw_candidates": []
+      }
+    ],
+    "models": {
+      "models\\zh-typo-check\\tokenizer.json": "7dfbf1966ebf99d471c3796e9b457329d2b2182b817e144f1e904b957745c839",
+      "models\\zh-typo-check\\model_quantized.onnx": "0c40a55ed4cae6df2fb32c666fb21c75bcea3543cd2dac653e0b4aff22e1e8c7",
+      "models\\zh-typo-check\\semantic-r13\\semantic-r13-int8.onnx": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda"
+    }
+  },
+  "bare_name_install_observation": {
+    "installed_version": "0.3.0",
+    "exact_version_verified": "0.3.2",
+    "reason_not_proven": true,
+    "user_install_security_settings_changed": false
+  },
+  "checks": {
+    "npm_test": "passed",
+    "recovery_script_ast": "passed",
+    "candidate_runtime_unchanged": "passed",
+    "source_and_tarball_files": "passed",
+    "github_assets": "passed"
+  },
+  "user_desktop_upgrade_performed": false,
+  "known_http10_transport_issue": "SIM-1055 (not fixed by this release)"
+}

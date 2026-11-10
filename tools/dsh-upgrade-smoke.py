@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--dsh-exe', type=Path, required=True)
 parser.add_argument('--installed-spec', default='dsh-zh-typo-check@0.2.3')
 parser.add_argument('--target-version', default='0.3.0')
+parser.add_argument('--expected-installed-version', help='Fail before probes if the registry selected another version')
 parser.add_argument('--candidate-source', action='store_true', help='Run current source as the old version before a registry update')
 parser.add_argument('--skip-probe', action='store_true')
 parser.add_argument('--with-models', action='store_true', help='Use the pinned public models from the local research cache')
@@ -84,6 +85,8 @@ try:
         time.sleep(.25)
     else: raise RuntimeError('Diagnostic endpoint did not start')
     receipt.update(origin=origin,host_pid=child.pid,hmr=state['hmr'],version=json.loads((package/'package.json').read_text(encoding='utf-8'))['version'])
+    if args.expected_installed_version:
+        assert receipt['version'] == args.expected_installed_version, 'Registry selected '+receipt['version']+'; expected '+args.expected_installed_version
     def call(part,timeout=60):
         with urllib.request.urlopen(origin+part,timeout=timeout) as response: return json.load(response)
     receipt['locks_before_import']=call('/upgrade-diagnostic/locks')
