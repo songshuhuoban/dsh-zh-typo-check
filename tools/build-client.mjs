@@ -59,14 +59,14 @@ fs.writeFileSync(path.join(outDir, 'client.js'), output, 'utf8')
 console.log('build-client: bundle/client.js <- src/{core,editor,config-store}.mjs + src/client.js')
 
 // 宿主侧：推理与分词保持为独立模块，由 index.js 直接 import
-const HOST_MODULES = ['core.mjs', 'tokenizer.mjs', 'infer.mjs', 'lexicon.mjs', 'l1.mjs', 'checker.mjs']
+const HOST_MODULES = ['core.mjs', 'tokenizer.mjs', 'infer.mjs', 'lexicon.mjs', 'l1.mjs', 'checker.mjs', 'semantic-tokenizer.mjs', 'semantic.mjs', 'semantic-service.mjs']
 for (const file of HOST_MODULES) {
   fs.copyFileSync(path.join(root, 'src', file), path.join(outDir, file))
 }
 console.log(`build-client: bundle/{${HOST_MODULES.join(',')}} <- src/`)
 
 // 词表与近音表：模型判据的"像话"约束靠它，1.9 MB 随插件分发
-const DATA_FILES = ['l1-words.txt', 'l1-sounds.txt']
+const DATA_FILES = ['l1-words.txt', 'l1-sounds.txt', 'semantic-r13-zh.txt', 'semantic-r13-en.txt']
 fs.mkdirSync(path.join(outDir, 'data'), { recursive: true })
 for (const file of DATA_FILES) {
   fs.copyFileSync(path.join(root, 'data', file), path.join(outDir, 'data', file))
@@ -74,7 +74,7 @@ for (const file of DATA_FILES) {
 console.log(`build-client: bundle/data/{${DATA_FILES.join(',')}} <- data/`)
 
 // 发布包要带使用者看的 README 和许可证（npm 从包根读取）
-for (const file of ['README.md', 'LICENSE']) {
+for (const file of ['README.md', 'LICENSE', 'MODEL-R13.md', 'NOTICE', 'LICENSE-APACHE-2.0']) {
   fs.copyFileSync(path.join(root, file), path.join(outDir, file))
 }
 console.log('build-client: bundle/{README.md,LICENSE} <- 仓库根')

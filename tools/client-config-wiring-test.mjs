@@ -65,7 +65,7 @@ function fakeForm(options = {}) {
       enabled: true,
       punctuation: true,
       model: true,
-      fluency: false,
+      fluency: true,
       sensitivity: 'normal',
       source: 'auto',
       customBase: '',

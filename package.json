@@ -16,6 +16,7 @@
     "l1:detail": "node tools/eval-detail.mjs dev",
     "l2:eval": "node tools/eval-mlm.mjs all",
     "model:test": "node tools/model-service-test.mjs",
+    "semantic:test": "node tools/semantic-product-test.mjs",
     "host:eval": "node tools/host-eval.mjs all",
     "resilience": "node tools/plugin-resilience-test.mjs",
     "infer:test": "node tools/tokenizer-test.mjs && node tools/infer-test.mjs && node tools/infer-route-test.mjs",

@@ -31,8 +31,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   enabled: true,
   punctuation: true,
   model: true,
-  // 实验功能：整句通顺度提示，默认关闭
-  fluency: false,
+  // 整句检查可独立下载；保留已有用户显式关闭的偏好。
+  fluency: true,
   sensitivity: 'normal',
   source: 'auto',
   customBase: '',

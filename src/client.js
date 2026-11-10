@@ -79,11 +79,21 @@ window.__ModuleLoader__.load({
         title: '中文检查',
         replace: '替换',
         ignore: '忽略',
-    fluencyBody: '可能不通畅',
-    optFluencyLabel: '整句通畅度（实验）',
-    optFluencyHint: '没有具体错字、但整句读起来别扭时提醒一句。只对以中文为主的句子生效：中英混排、代码和数字较多的句子不判断（模型对混排打分不准，容易误报）。专业术语和人名也可能误报。',
+    fluencyBody: '整句意思可能不连贯',
+    optFluencyLabel: '整句检查',
+    optFluencyHint: '中文、英文和混排；只提示，不改写。',
+    semanticAbsent: '下载约 27 MB 后生效。',
+    semanticReady: '已就绪 · 本地运行',
+    semanticDisabled: '已关闭',
+    semanticGlobalOff: '检查已暂停',
+    semanticEnable: '开启整句检查',
+    semanticDownload: '下载整句模型',
+    semanticRemove: '删除整句模型',
+    semanticRetry: '重试下载',
+    semanticUnavailable: '整句检查不可用',
+    semanticRuntime: '运行时不可用，请重新安装插件。',
 
-        sectionIntro: '在输入框里标出中文错别字和半角标点。本地规则永远可用；装上模型后，语义层面的误判也会被挡掉。',
+        sectionIntro: '检查错字、标点和整句语义。',
         options: '检查设置',
         on: '开',
         off: '关',
@@ -91,15 +101,15 @@ window.__ModuleLoader__.load({
         optEnabledHint: '关掉之后输入框完全不受影响。',
         optPunctLabel: '检查半角标点',
         optPunctHint: '把 , ? ; 这类半角标点标出来。',
-        optModelLabel: '使用模型',
-        optModelHint: '需要先下载模型。关掉只跑规则，仍然立刻响应。',
-        optSensitivityLabel: '模型灵敏度',
+        optModelLabel: '中文错字增强',
+        optModelHint: '需另行下载约 104 MB；补充单字替换建议。',
+        optSensitivityLabel: '错字灵敏度',
         optSensitivityHint: '激进会多报，保守会少报。',
         sensLow: '保守',
         sensNormal: '标准',
         sensHigh: '激进',
         optSourceLabel: '下载来源',
-        optSourceHint: '自动会先探测哪条线路通，再决定顺序。',
+        optSourceHint: '用于错字模型；整句模型从 GitHub 下载。自定义地址对两者生效。',
         sourceAuto: '自动',
         sourceMirror: '国内镜像',
         sourceOfficial: '官方',
@@ -108,7 +118,7 @@ window.__ModuleLoader__.load({
         customInvalid: '地址需要以 http:// 或 https:// 开头',
         settingsSaveFailed: '设置没能保存：{error}',
         settingsNamespaceUnavailable: '这个 DSH 版本没有提供本插件的配置，设置只会留在当前页面。',
-        model: '本地模型',
+        model: '中文错字增强',
         stateAbsent: '未安装',
         stateDownloading: '下载中 {percent}%',
         stateVerifying: '校验中',
@@ -117,8 +127,13 @@ window.__ModuleLoader__.load({
         downloadingFile: '{file}（{index}/{count}）· {percent}%',
         partialDetail: '已下载 {size}，还差一部分',
         actionFailed: '操作失败：{error}',
-        lastCheck: '上次模型检查：{state} · 命中 {issues} 处 · {ms} ms',
-        lastCheckIdle: '上次模型检查：还没有跑过（在输入框里打一句话试试）',
+        lastCheck: '最近模型检查：错字{typo} · 整句{sentence} · {ms} ms',
+        lastCheckIdle: '输入一句话后可查看检查结果。',
+        sentenceWarning: '已提示',
+        sentenceClear: '未提示',
+        sentenceLong: '超出长度，未检查',
+        sentenceOff: '已关闭',
+        sentenceUnavailable: '未就绪',
         stateReady: '已就绪',
         stateError: '出错：{error}',
         stateChecking: '检查中…',
@@ -127,8 +142,8 @@ window.__ModuleLoader__.load({
         remove: '删除',
         reDownload: '重新下载',
         download: '下载模型',
-        noteReady: '模型只在本机运行，输入内容不会上传。删除后自动退回纯规则检查。',
-        noteAbsent: '首次需要下载约 103 MB，支持国内镜像。未安装时只做规则检查，输入框照常可用。',
+        noteReady: '本地运行。删除只影响中文错字增强。',
+        noteAbsent: '可选下载约 104 MB，支持国内镜像。',
         runtimeMissing: '推理运行时缺失（onnxruntime-node 未安装），模型暂时无法加载。这只影响语义检查，规则检查照常工作。',
         hostUnavailable: '宿主服务不可用（{error}）。若刚更新过插件，重启 DSH 后生效。',
       },
@@ -136,11 +151,21 @@ window.__ModuleLoader__.load({
         title: 'Chinese check',
         replace: 'Replace',
         ignore: 'Ignore',
-    fluencyBody: 'Reads awkwardly',
-    optFluencyLabel: 'Sentence fluency (experimental)',
-    optFluencyHint: 'A one-line note when the whole sentence reads oddly even though no single character is wrong. Only for mostly-Chinese sentences: mixed Chinese/English, code and numbers are skipped because the model cannot judge code-switching reliably. Jargon and names may also trigger it.',
+    fluencyBody: 'The sentence may be incoherent',
+    optFluencyLabel: 'Sentence checking',
+    optFluencyHint: 'Chinese, English and mixed text. Warnings only.',
+    semanticAbsent: 'Download about 27 MB to enable.',
+    semanticReady: 'Ready · Runs locally',
+    semanticDisabled: 'Off',
+    semanticGlobalOff: 'Checking paused',
+    semanticEnable: 'Enable sentence checking',
+    semanticDownload: 'Download sentence model',
+    semanticRemove: 'Remove sentence model',
+    semanticRetry: 'Retry download',
+    semanticUnavailable: 'Sentence checking unavailable',
+    semanticRuntime: 'Runtime unavailable. Reinstall the plugin.',
 
-        sectionIntro: 'Flags Chinese typos and half-width punctuation in the composer. The rule engine always works; with the model installed, semantic mistakes are caught too.',
+        sectionIntro: 'Check typos, punctuation and whole-sentence meaning.',
         options: 'Checking options',
         on: 'On',
         off: 'Off',
@@ -148,15 +173,15 @@ window.__ModuleLoader__.load({
         optEnabledHint: 'Turn off to leave the composer completely untouched.',
         optPunctLabel: 'Check half-width punctuation',
         optPunctHint: 'Flags ASCII , ? ; and friends.',
-        optModelLabel: 'Use the model',
-        optModelHint: 'Requires the model download. Without it, rules only, still instant.',
-        optSensitivityLabel: 'Model sensitivity',
+        optModelLabel: 'Chinese typo enhancement',
+        optModelHint: 'Optional 104 MB download for character replacement suggestions.',
+        optSensitivityLabel: 'Typo sensitivity',
         optSensitivityHint: 'Aggressive flags more; conservative flags less.',
         sensLow: 'Conservative',
         sensNormal: 'Normal',
         sensHigh: 'Aggressive',
         optSourceLabel: 'Download source',
-        optSourceHint: 'Auto probes which line works first, then decides the order.',
+        optSourceHint: 'For the typo model. The sentence model uses GitHub. Custom applies to both.',
         sourceAuto: 'Auto',
         sourceMirror: 'China mirror',
         sourceOfficial: 'Official',
@@ -165,7 +190,7 @@ window.__ModuleLoader__.load({
         customInvalid: 'The address must start with http:// or https://',
         settingsSaveFailed: 'Settings were not saved: {error}',
         settingsNamespaceUnavailable: 'This DSH version does not expose this plugin’s configuration, so settings only apply to this page.',
-        model: 'Local model',
+        model: 'Chinese typo enhancement',
         stateAbsent: 'Not installed',
         stateDownloading: 'Downloading {percent}%',
         stateVerifying: 'Verifying',
@@ -174,8 +199,13 @@ window.__ModuleLoader__.load({
         downloadingFile: '{file} ({index}/{count}) · {percent}%',
         partialDetail: '{size} downloaded, the rest is missing',
         actionFailed: 'Action failed: {error}',
-        lastCheck: 'Last model check: {state} · {issues} hit(s) · {ms} ms',
-        lastCheckIdle: 'Last model check: none yet (type a sentence in the composer)',
+        lastCheck: 'Last model check: Typos: {typo} · Sentence: {sentence} · {ms} ms',
+        lastCheckIdle: 'Type a sentence to see check results.',
+        sentenceWarning: 'warning',
+        sentenceClear: 'no warning',
+        sentenceLong: 'too long, not checked',
+        sentenceOff: 'off',
+        sentenceUnavailable: 'not ready',
         stateReady: 'Ready',
         stateError: 'Failed: {error}',
         stateChecking: 'Checking…',
@@ -184,8 +214,8 @@ window.__ModuleLoader__.load({
         remove: 'Remove',
         reDownload: 'Download again',
         download: 'Download model',
-        noteReady: 'The model runs on this machine only; nothing you type is uploaded. Removing it falls back to rule-only checking.',
-        noteAbsent: 'The first download is about 103 MB and supports mirrors. Without it, only rule-based checking runs; the composer stays fully usable.',
+        noteReady: 'Runs locally. Removing it only disables Chinese typo enhancement.',
+        noteAbsent: 'Optional 104 MB download with mirror support.',
         runtimeMissing: 'The inference runtime (onnxruntime-node) is missing, so the model cannot load. Rule-based checking is unaffected.',
         hostUnavailable: 'Host service unavailable ({error}). If the plugin was just updated, restart DSH.',
       },
@@ -333,6 +363,10 @@ window.__ModuleLoader__.load({
      * Returns null whenever nothing can be shown safely (no editor, mid-IME,
      * chip present, or the DOM disagrees with the draft).
      */
+    const modelChangeListeners = new Set()
+    function modelsChanged() { for (const listener of modelChangeListeners) listener() }
+    function modelCacheKey(text, prefs) { return text + '\u0000' + [prefs.sensitivity, prefs.model, prefs.fluency].join(':') }
+
     function computeView(draft, rev, found, ignored, wave, stamp, fluency) {
       if (typeof draft !== 'string' || draft === '') return null
       const root = document.querySelector('[data-composer-input]')
@@ -520,10 +554,11 @@ window.__ModuleLoader__.load({
           // 规则先出结果，模型的结果到了再补一次——两者都不阻塞输入。
           let fromModel = []
           let fromFluency = null
-          if (prefs.model) {
-            const record = modelRef.current.text === text ? modelRef.current : modelCacheRef.current.get(text)
+          if (prefs.model || prefs.fluency) {
+            const key = modelCacheKey(text, prefs)
+            const record = modelRef.current.key === key ? modelRef.current : modelCacheRef.current.get(key)
             if (record !== undefined) {
-              fromModel = record.issues
+              fromModel = prefs.model ? record.issues : []
               fromFluency = prefs.fluency && record.fluency?.low === true ? record.fluency : null
             }
           }
@@ -543,12 +578,16 @@ window.__ModuleLoader__.load({
        */
       React.useEffect(() => {
         if (typeof draft !== 'string') return undefined
-        if (!prefs.enabled || !prefs.model) return undefined
-        if (draft.length < MODEL_MIN_CHARS || draft.length > MODEL_MAX_CHARS) return undefined
+        if (!prefs.enabled || (!prefs.model && !prefs.fluency)) return undefined
+        if (draft.length < MODEL_MIN_CHARS) return undefined
+        if (draft.length > MODEL_MAX_CHARS) {
+          checkLogStore.set({ state: 'skipped', issues: 0, sentence: 'Long', ms: 0, at: Date.now(), detail: '' })
+          return undefined
+        }
         // 灵敏度变了要重新问一次，所以缓存的文本里带上阈值
-        const requestKey = draft + '|' + prefs.sensitivity
+        const requestKey = modelCacheKey(draft, prefs)
         if (requestedRef.current === requestKey) return undefined
-        if (modelCacheRef.current.has(draft)) { requestedRef.current = requestKey; return undefined }
+        if (modelCacheRef.current.has(requestKey)) { requestedRef.current = requestKey; return undefined }
         const timer = window.setTimeout(() => {
           const startedAt = Date.now()
           requestedRef.current = requestKey
@@ -560,6 +599,7 @@ window.__ModuleLoader__.load({
           inflightRef.current = controller
           const url = MODEL_ENDPOINT + 'check?text=' + encodeURIComponent(draft)
             + '&delta=' + SENSITIVITY[prefs.sensitivity]
+            + '&typo=' + (prefs.model ? '1' : '0') + '&sentence=' + (prefs.fluency ? '1' : '0')
           fetch(url, { cache: 'no-store', signal: controller.signal })
             .then((response) => (response.ok ? response.json() : null))
             .then((body) => {
@@ -570,16 +610,20 @@ window.__ModuleLoader__.load({
                 ? ''
                 : [body.reason, body.chars !== undefined ? body.chars + ' 字' : '', body.aligned === false ? '分词未对齐' : '']
                   .filter((part) => typeof part === 'string' && part !== '').join(' · ')
-              checkLogStore.set({ state, issues, ms: elapsed, at: Date.now(), detail: body?.error ? body.error : detail })
+              const sentence = body?.semantic?.state === 'ready' ? body.semantic.warning ? 'Warning' : 'Clear'
+                : body?.semantic?.state === 'disabled' ? 'Off' : body?.semantic?.state === 'too-long' ? 'Long' : 'Unavailable'
+              const typo = body?.typo?.state === 'ready' ? 'Ready' : body?.typo?.state === 'disabled' ? 'Off' : 'Unavailable'
+              checkLogStore.set({ state, issues, typo, sentence, ms: elapsed, at: Date.now(), detail: body?.semantic?.error || body?.error || detail })
               if (body === null || body.state !== 'ready' || !Array.isArray(body.issues)) {
                 // 这一次没成，下次文本再变还有机会——但不能把这句永久钉死成"查过了"。
                 // 早先这里不重置，模型晚装好之后同一句话再也不会被查。
                 requestedRef.current = ''
                 return
               }
-              const record = { text: draft, issues: body.issues, fluency: body.fluency ?? null }
+              if (controller.signal.aborted) return
+              const record = { key: requestKey, text: draft, issues: body.issues, fluency: body.fluency ?? null }
               modelRef.current = record
-              modelCacheRef.current.set(draft, record)
+              modelCacheRef.current.set(requestKey, record)
               if (inflightRef.current === controller) inflightRef.current = null
               if (modelCacheRef.current.size > CACHE_LIMIT) {
                 modelCacheRef.current.delete(modelCacheRef.current.keys().next().value)
@@ -592,6 +636,7 @@ window.__ModuleLoader__.load({
               checkLogStore.set({
                 state: 'HTTP 不可用',
                 issues: 0,
+                sentence: 'Unavailable',
                 ms: Date.now() - startedAt,
                 at: Date.now(),
                 detail: failure instanceof Error ? failure.message : String(failure),
@@ -607,7 +652,19 @@ window.__ModuleLoader__.load({
             inflightRef.current = null
           }
         }
-      }, [draft, prefs.enabled, prefs.model, prefs.sensitivity])
+      }, [draft, prefs.enabled, prefs.model, prefs.fluency, prefs.sensitivity, modelVersion])
+
+      React.useEffect(() => {
+        const invalidate = () => {
+          if (inflightRef.current) inflightRef.current.abort()
+          modelCacheRef.current.clear()
+          modelRef.current = { text: '', issues: [] }
+          requestedRef.current = ''
+          setModelVersion(value => value + 1)
+        }
+        modelChangeListeners.add(invalidate)
+        return () => modelChangeListeners.delete(invalidate)
+      }, [])
 
       // Short drafts: check and measure synchronously, in the very paint that
       // changed the text. This is the whole latency budget.
@@ -942,8 +999,8 @@ window.__ModuleLoader__.load({
 
     function formatBytes(bytes) {
       if (!bytes) return ''
-      if (bytes < 1048576) return (bytes / 1024).toFixed(0) + ' KB'
-      return (bytes / 1048576).toFixed(1) + ' MB'
+      if (bytes < 1000000) return (bytes / 1000).toFixed(0) + ' KB'
+      return (bytes / 1000000).toFixed(1) + ' MB'
     }
 
     /**
@@ -1019,6 +1076,75 @@ window.__ModuleLoader__.load({
       }
     }
 
+    function SemanticModelCard({ t, prefs }) {
+      const [status, setStatus] = React.useState(null)
+      const [error, setError] = React.useState(null)
+      const [busy, setBusy] = React.useState(false)
+      const [tick, setTick] = React.useState(0)
+      const observed = React.useRef('')
+      const endpoint = MODEL_ENDPOINT + 'semantic/'
+      React.useEffect(() => {
+        let alive = true, timer
+        const poll = async () => {
+          try {
+            const response = await fetch(endpoint + 'status', { cache: 'no-store' })
+            if (!response.ok) throw new Error('HTTP ' + response.status)
+            const next = await response.json()
+            if (!alive) return
+            setStatus(next); setError(null)
+            const key = [next.state, next.revision, next.runtime].join(':')
+            if (observed.current !== key) { observed.current = key; modelsChanged() }
+            if (next.state === 'downloading' || next.state === 'verifying') timer = window.setTimeout(poll, 400)
+          } catch (failure) { if (alive) setError(failure.message) }
+        }
+        void poll()
+        return () => { alive = false; window.clearTimeout(timer) }
+      }, [tick])
+      const act = async action => {
+        setBusy(true); setError(null)
+        try {
+          const base = prefs.source === 'custom' ? '?base=' + encodeURIComponent(prefs.customBase.trim()) : ''
+          const response = await fetch(endpoint + action + (action === 'download' ? base : ''), { cache: 'no-store' })
+          const next = await response.json()
+          if (!response.ok) throw new Error(next.error || 'HTTP ' + response.status)
+          setStatus(next); modelsChanged(); setTick(value => value + 1)
+        } catch (failure) { setError(failure.message) }
+        finally { setBusy(false) }
+      }
+      const state = status?.state ?? 'unknown'
+      const downloading = state === 'downloading' || state === 'verifying'
+      const runtimeMissing = state === 'ready' && status.runtime === false
+      const label = runtimeMissing ? t('semanticRuntime') : state === 'ready'
+        ? !prefs.enabled ? t('semanticGlobalOff') : prefs.fluency ? t('semanticReady') : t('semanticDisabled')
+        : state === 'verifying' ? t('stateVerifying') : state === 'downloading'
+          ? format(t('stateDownloading'), { percent: Math.round(100 * status.bytes / status.total) })
+          : state === 'error' ? status.error : state === 'unknown' ? t('stateChecking') : t('semanticAbsent')
+      return React.createElement('section', {
+        'data-zh-semantic-settings': '', 'aria-label': t('optFluencyLabel'),
+        style: { border: '1px solid var(--dsw-alias-border-l1)', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--dsw-alias-bg-layer-1)' },
+      }, [
+        React.createElement('div', { key: 'header', style: { display: 'flex', alignItems: 'center', gap: '12px' } }, [
+          React.createElement('span', { key: 'title', style: { fontSize: '13px', fontWeight: 500, flex: 1 } }, t('optFluencyLabel')),
+          React.createElement('button', { key: 'toggle', type: 'button', role: 'switch', 'aria-checked': prefs.fluency,
+            'aria-label': t('optFluencyLabel'), title: t('optFluencyLabel'),
+            onClick: () => settingsStore.set({ fluency: !prefs.fluency }), style: buttonStyle(prefs.fluency) }, prefs.fluency ? t('on') : t('off')),
+        ]),
+        React.createElement('div', { key: 'hint', style: { fontSize: '12px', color: 'var(--dsw-alias-label-secondary)' } }, t('optFluencyHint')),
+        React.createElement('div', { key: 'state', role: 'status', 'aria-live': 'polite', style: { fontSize: '12px',
+          color: error || state === 'error' || runtimeMissing ? 'var(--dsw-alias-state-error-primary)' : 'var(--dsw-alias-label-secondary)' } }, error || label),
+        downloading ? React.createElement('progress', { key: 'progress', value: state === 'verifying' ? undefined : status.bytes,
+          max: status.total, 'aria-label': t('optFluencyLabel'), style: { width: '100%', height: '6px' } }) : null,
+        React.createElement('div', { key: 'actions', style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' } }, [
+          state === 'absent' || state === 'error' ? React.createElement('button', { key: 'download', type: 'button', disabled: busy || (prefs.source === 'custom' && !isValidBase(prefs.customBase)),
+            onClick: () => act('download'), style: buttonStyle(true) }, state === 'error' ? t('semanticRetry') : t('semanticDownload')) : null,
+          downloading ? React.createElement('button', { key: 'cancel', type: 'button', disabled: busy, onClick: () => act('cancel'), style: buttonStyle(false) }, t('cancel')) : null,
+          state === 'ready' ? React.createElement('button', { key: 'remove', type: 'button', disabled: busy, title: t('semanticRemove'), 'aria-label': t('semanticRemove'),
+            onClick: () => act('delete'), style: buttonStyle(false) }, React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, 'aria-hidden': true },
+            React.createElement('path', { d: 'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7' }))) : null,
+        ]),
+      ])
+    }
+
     /** 设置页与插件详情页共用的面板；head 控制要不要自己画标题。 */
     function ZhTypoPanel(props) {
       // 槽位没注入 t 时退回注册期绑定好的那个（同样是"调用时读当前语言"）
@@ -1035,6 +1161,7 @@ window.__ModuleLoader__.load({
       const lastCheck = useCheckLog()
       /** 点过按钮之后的一段时间内继续轮询：宿主的下载可能还在探测线路，状态没翻过来。 */
       const settleRef = React.useRef(0)
+      const modelStatusKey = React.useRef('')
 
       /**
        * 自定义下载地址是输入框：按「失焦提交」处理。
@@ -1073,6 +1200,8 @@ window.__ModuleLoader__.load({
             if (!alive) return
             setStatus(next)
             setPollError(null)
+            const key = next.state + ':' + (next.state === 'ready' ? next.bytes : '')
+            if (modelStatusKey.current !== key) { modelStatusKey.current = key; modelsChanged() }
             // 校验也要继续轮询，否则界面会停在"校验中"；动作刚发生后的几秒也要盯住，
             // 因为宿主的下载可能还在探测线路，状态暂时还是 absent。
             const active = next.state === 'downloading' || next.state === 'verifying'
@@ -1148,6 +1277,13 @@ window.__ModuleLoader__.load({
           ])
           : null,
 
+        React.createElement(SemanticModelCard, { key: 'semantic-model', t, prefs }),
+        React.createElement('div', { key: 'last-check', title: lastCheck.detail || undefined,
+          style: { fontSize: '12px', color: 'var(--dsw-alias-label-secondary)' } },
+        lastCheck.at === 0 ? t('lastCheckIdle') : format(t('lastCheck'), {
+          typo: lastCheck.typo === 'Ready' ? String(lastCheck.issues) : t('sentence' + (lastCheck.typo || 'Unavailable')),
+          sentence: t('sentence' + (lastCheck.sentence || 'Unavailable')), ms: lastCheck.ms,
+        })),
         React.createElement('div', {
           key: 'options',
           style: {
@@ -1180,9 +1316,7 @@ window.__ModuleLoader__.load({
                 onClick: () => settingsStore.set({ sensitivity: level }),
                 style: segmentStyle(prefs.sensitivity === level),
               }, t(level === 'low' ? 'sensLow' : level === 'high' ? 'sensHigh' : 'sensNormal'))))),
-          prefRow('fluency', t('optFluencyLabel'), t('optFluencyHint'), toggleControl(t, prefs.fluency, () => {
-            settingsStore.set({ fluency: !prefs.fluency })
-          })),          prefRow('source', t('optSourceLabel'), t('optSourceHint'),
+          prefRow('source', t('optSourceLabel'), t('optSourceHint'),
             React.createElement('div', { key: 'seg', style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
               ['auto', 'mirror', 'official', 'custom'].map((level) => React.createElement('button', {
                 key: level,
@@ -1361,16 +1495,6 @@ window.__ModuleLoader__.load({
               style: { fontSize: '12px', color: 'var(--dsw-alias-label-secondary)' },
             }, format(t('partialDetail'), { size: formatBytes(status.bytes) }))
             : null,
-          React.createElement('div', {
-            key: 'last-check',
-            style: { fontSize: '12px', color: 'var(--dsw-alias-label-secondary)' },
-          }, lastCheck.at === 0
-            ? t('lastCheckIdle')
-            : format(t('lastCheck'), {
-              state: lastCheck.detail === '' ? lastCheck.state : lastCheck.state + ' ' + lastCheck.detail,
-              issues: lastCheck.issues,
-              ms: lastCheck.ms,
-            })),
           React.createElement('div', {
             key: 'note',
             style: { fontSize: '12px', lineHeight: '18px', color: 'var(--dsw-alias-label-secondary)' },

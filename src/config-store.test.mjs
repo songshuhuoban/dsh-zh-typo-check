@@ -183,7 +183,7 @@ expect('非对象输入整体退回默认', normalizeSettings('nope'), { ...DEFA
 
 // ---- 5. 并发写：旧写的失败不能覆盖新写的结果 ----
 {
-  const scope = new FakeScope()
+  const scope = new FakeScope({ fluency: false })
   const bridge = new ConfigSettings({})
   bridge.attach(scope)
 
@@ -218,7 +218,7 @@ expect('非对象输入整体退回默认', normalizeSettings('nope'), { ...DEFA
 // ---- 7. 一次性迁移：旧 localStorage 设置搬进 Host（一次批量写） ----
 {
   const storage = memoryStorage({
-    'dsh.zh-typo-check.settings': JSON.stringify({ ...DEFAULT_SETTINGS, punctuation: false, fluency: true }),
+    'dsh.zh-typo-check.settings': JSON.stringify({ ...DEFAULT_SETTINGS, punctuation: false, fluency: false }),
   })
   const scope = new FakeScope({}, { user: {} })
   const events = []
@@ -229,10 +229,10 @@ expect('非对象输入整体退回默认', normalizeSettings('nope'), { ...DEFA
   expect(
     '补写内容正确',
     scope.mutations[0].map((op) => [op.path[0], op.value]),
-    [['punctuation', false], ['fluency', true]],
+    [['punctuation', false], ['fluency', false]],
   )
   expect('迁移后有事件', events.some((m) => m.includes('flushed')), true)
-  expect('迁移后值保持', [bridge.get().punctuation, bridge.get().fluency], [false, true])
+  expect('迁移后保留显式关闭整句检查', [bridge.get().punctuation, bridge.get().fluency], [false, false])
 }
 
 // ---- 8. Host 已有用户设置时，不被旧缓存覆盖 ----

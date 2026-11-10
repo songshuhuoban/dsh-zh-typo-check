@@ -44,7 +44,7 @@ export const Config = z.object({
   enabled: live(z.boolean().default(true).description('Underline Chinese typos in the composer.')),
   punctuation: live(z.boolean().default(true).description('Also flag half-width ASCII punctuation.')),
   model: live(z.boolean().default(true).description('Use the local model for semantic checks when installed.')),
-  fluency: live(z.boolean().default(false).description('Experimental: hint when a whole sentence reads awkwardly.')),
+  fluency: live(z.boolean().default(true).description('Use the local whole-input Chinese, English and mixed-language semantic checker.')),
   sensitivity: live(z.union([z.const('low'), z.const('normal'), z.const('high')]).default('normal')
     .description('Model sensitivity: conservative, normal, or aggressive.')),
   source: live(z.union([z.const('auto'), z.const('mirror'), z.const('official'), z.const('custom')]).default('auto')
@@ -160,9 +160,10 @@ function urlsOf(spec, bases) {
 }
 
 let current = null
+let hostProfileDir = null
 
 function modelDir() {
-  const profileDir = process.env.DSH_PROFILE_DIR
+  const profileDir = hostProfileDir ?? process.env.DSH_PROFILE_DIR
   const base = profileDir !== undefined && profileDir !== ''
     ? profileDir
     : path.join(os.homedir(), '.dsh', 'profiles', process.env.DSH_PROFILE ?? 'desktop')
@@ -363,6 +364,17 @@ let lastCheck = null
 
 let cachedModel = null
 let cachedLexicon
+let semanticService = null
+async function semanticHandle() {
+  if (semanticService === null) {
+    const { createSemanticService } = await import('./semantic-service.mjs')
+    semanticService = createSemanticService({
+      directory: path.join(modelDir(), 'semantic-r13'),
+      dataDirectory: path.join(path.dirname(fileURLToPath(import.meta.url)), 'data'),
+    })
+  }
+  return semanticService
+}
 
 /** 词表与同音索引只读一次；读不到就退回"不设约束"，而不是让检查整体失败。 */
 async function lexiconHandle() {
@@ -435,52 +447,26 @@ async function serveFile(request) {
   })
 }
 
-/** 通顺度阈值：低于它认为整句读起来别扭。语料上正常句最低 14.1，有错句低至 5。 */
-const FLUENCY_THRESHOLD = Number(process.env.FLUENCY_THRESHOLD ?? 12.5)
-
-/**
- * 中英混排 / 代码 / 数字串不判通顺度。
- *
- * 实测 18 句正确的中英混排（API、PR、npm install、URL、IP 等）里有 5 句会被
- * 模型判成"不通畅"（avg 4.05~12.16），而乱句的 avg 也在 6 左右——两个区间重叠，
- * 没有阈值可以分开。通顺度是实验功能，宁可对混排句不下结论，也不要高频误报蓝线；
- * 混排句里的中文错字仍然照常检查（token 位置映射已支持）。
- */
-const CODE_SWITCH_RE = /[A-Za-z]{2,}|\d{2,}|https?:\/\/|www\./
-
-/**
- * 把逐字得分收成一句通顺度。
- *
- * 每个分数是「模型对原文这个字的评分」——越负说明模型越没料到这个字。
- * 取平均比取最低稳：单个专有名词会拉低最低分，但拉不动平均。
- *
- * @param {string} text 原句（用于判断是否适合下结论）
- * @param {number[]} scores 每个已打分位置的「原字得分」
- */
-function summarizeFluency(text, scores) {
-  if (typeof text !== 'string') return null
-  if (CODE_SWITCH_RE.test(text)) return null
-  if (!Array.isArray(scores) || scores.length === 0) return null
-  let sum = 0
-  let min = Number.POSITIVE_INFINITY
-  for (const score of scores) {
-    sum += score
-    if (score < min) min = score
-  }
-  const avg = sum / scores.length
-  return {
-    avg: Number(avg.toFixed(2)),
-    min: Number(min.toFixed(2)),
-    samples: scores.length,
-    threshold: FLUENCY_THRESHOLD,
-    low: avg < FLUENCY_THRESHOLD,
-  }
-}
-
 /** The single resource answering every /zh-typo-model/ request. */
 async function resource(request) {
   const url = new URL(request.url)
   const sub = url.pathname.slice(ROUTE.length).replace(/^\//, '')
+
+  if (sub.startsWith('semantic/')) {
+    const service = await semanticHandle(), action = sub.slice('semantic/'.length)
+    try {
+      if (action === 'status') return json(await service.status())
+      if (action === 'download') {
+        const base = url.searchParams.get('base') ?? ''
+        if (base && normalizeBase(base) === null) return json({ error: '下载地址需要 http:// 或 https://' }, 400)
+        await service.beginDownload(base)
+        return json(await service.status(), 202)
+      }
+      if (action === 'cancel') return json(await service.cancel())
+      if (action === 'delete') return json(await service.remove())
+    } catch (error) { return json({ state: 'error', error: error.message }, 500) }
+    return json({ error: 'not found' }, 404)
+  }
 
   // 这个路由只接受 GET/HEAD：Web 资源路由对其它方法直接 405，
   // 所以下载与删除也走 GET，靠语义化路径区分。
@@ -577,62 +563,46 @@ async function resource(request) {
 
   if (sub === 'check') {
     const text = url.searchParams.get('text') ?? ''
-    const status = await refreshFromDisk()
-    // 诊断字段：让调用方看见"宿主实际收到了什么"，而不是只看结果为空。
-    // 空结果可能是没模型、文本为空、超长，或者分词没对齐——三种原因完全不同。
     const chars = [...text].length
-    // 没有模型时明确告诉调用方"只用规则跑"，不要让它以为检查过了
-    if (status.state !== 'ready') return json({ state: status.state, issues: [], chars, reason: 'no-model' })
+    const wantsTypo = url.searchParams.get('typo') !== '0'
+    const wantsSemantic = url.searchParams.get('sentence') !== '0'
     if (text === '' || chars > MAX_CHECK_CHARS) {
-      return json({ state: 'ready', issues: [], chars, reason: text === '' ? 'empty-text' : 'too-long' })
+      return json({ state: 'ready', issues: [], chars, reason: text === '' ? 'empty-text' : 'too-long',
+        fluency: null, semantic: { state: text === '' ? 'empty' : 'too-long', warning: null } })
     }
-    try {
-      const model = await modelHandle()
-      const lexicon = await lexiconHandle()
-      const { checkText } = await import('./checker.mjs')
-      const { encode } = await inferModule()
-      // 注意 Number(null) 是 0，必须先判"有没有这个参数"
-      const rawDelta = url.searchParams.get('delta')
-      const delta = rawDelta === null ? Number.NaN : Number(rawDelta)
-      const { aligned } = encode(model, text)
-      const startedAt = Date.now()
-      // 同一句 + 同一阈值只算一次：模型的推理是串行的，重复请求只会互相排队。
-      // 结果里同时带着每个打分位置的「原字得分」，通顺度就用它们算，不额外推理。
-      const cacheKey = text + '\u0000' + String(delta)
-      let pending = inflightChecks.get(cacheKey)
-      if (pending === undefined) {
-        const collected = []
-        pending = checkText(model, lexicon, text, {
-          minDelta: Number.isFinite(delta) ? delta : undefined,
-          scores: collected,
-        })
-          .then((issues) => ({ issues, scores: collected }))
-          .finally(() => { inflightChecks.delete(cacheKey) })
-        inflightChecks.set(cacheKey, pending)
-      }
-      const { issues, scores } = await pending
-      const fluency = summarizeFluency(text, scores)
-      lastCheck = { at: Date.now(), chars, issues: issues.length, threshold: Number.isFinite(delta) ? delta : null, head: text.slice(0, 24) }
-      return json({
-        state: 'ready',
-        issues,
-        chars,
-        aligned,
-        ms: Date.now() - startedAt,
-        reason: aligned ? 'checked' : 'not-aligned',
-        threshold: Number.isFinite(delta) ? delta : null,
-        fluency,
-      })
-    } catch (error) {
-      const missing = error?.code === 'E_ORT_MISSING'
-      return json({
-        state: missing ? 'no-runtime' : 'error',
-        error: error instanceof Error ? error.message : String(error),
-        issues: [],
-        chars,
-        reason: 'exception',
-      }, missing ? 200 : 500)
+    const startedAt = Date.now(), status = await refreshFromDisk()
+    const rawDelta = url.searchParams.get('delta'), delta = rawDelta === null ? Number.NaN : Number(rawDelta)
+    const cacheKey = [text, String(delta), wantsTypo, wantsSemantic].join('\u0000')
+    let pending = inflightChecks.get(cacheKey)
+    if (!pending) {
+      pending = (async () => {
+        const semanticTask = wantsSemantic
+          ? semanticHandle().then(service => service.check(text)).catch(error => ({ state: 'unavailable', warning: null, low: null, error: error.message }))
+          : Promise.resolve({ state: 'disabled', warning: null, low: null })
+        let issues = [], aligned = true, typoState = wantsTypo ? status.state : 'disabled', typoError = null
+        if (wantsTypo && status.state === 'ready') {
+          try {
+            const model = await modelHandle(), lexicon = await lexiconHandle()
+            const { checkText } = await import('./checker.mjs'), { encode } = await inferModule()
+            aligned = encode(model, text).aligned
+            issues = await checkText(model, lexicon, text, { minDelta: Number.isFinite(delta) ? delta : undefined })
+            typoState = 'ready'
+          } catch (error) { typoState = 'unavailable'; typoError = error.message }
+        }
+        const semantic = await semanticTask
+        const ready = typoState === 'ready' || semantic.state === 'ready'
+        return { state: ready ? 'ready' : typoState === 'unavailable' || semantic.state === 'unavailable' ? 'error' : status.state,
+          issues, chars, aligned, reason: ready ? 'checked' : 'model-unavailable',
+          threshold: Number.isFinite(delta) ? delta : null,
+          fluency: semantic.state === 'ready' ? semantic : null, semantic,
+          typo: { state: typoState, error: typoError } }
+      })().finally(() => inflightChecks.delete(cacheKey))
+      inflightChecks.set(cacheKey, pending)
     }
+    const result = await pending
+    lastCheck = { at: Date.now(), chars, issues: result.issues.length, semantic: result.semantic.state,
+      warning: result.semantic.warning === true, threshold: Number.isFinite(delta) ? delta : null }
+    return json({ ...result, ms: Date.now() - startedAt })
   }
 
   if (sub === 'delete') {
@@ -728,6 +698,10 @@ function inspectClientEntry(ctx) {
 
 export function apply(ctx, refs) {
   try {
+    // profileContext is the launcher's authoritative profile. DSH_PROFILE_* is
+    // normally provided to agent shell tools, not to the host's own process.env.
+    const profile = typeof ctx.get === 'function' ? ctx.get('profileContext') : ctx.profileContext
+    hostProfileDir = typeof profile?.dir === 'string' && profile.dir ? profile.dir : null
     // 诊断不能影响加载：configSummary 可能遇到不可序列化的 Ref，放进 try 里。
     bootLog(`apply start, webServer=${typeof ctx.webServer}, effect=${typeof ctx.effect}, settings=${configSummary(refs)}`)
     current = freshState()
@@ -760,14 +734,21 @@ export function apply(ctx, refs) {
           downloadJob = null
         }
       } catch { /* 卸载不能因为清理失败而阻塞 */ }
+      const pendingChecks = [...inflightChecks.values()]
       inflightChecks.clear()
+      const oldSemantic = semanticService
+      semanticService = null
+      const semanticCleanup = oldSemantic?.dispose().catch(() => {})
       current = freshState()
       lastCheck = null
-      const opened = cachedModel
       cachedModel = null
       cachedLexicon = undefined
-      try { opened?.model?.release?.() } catch { /* onnxruntime 版本可能没有 release */ }
-      bootLog('released: download aborted, model unloaded')
+      const typoCleanup = Promise.allSettled(pendingChecks).then(async () => {
+        try { const infer = await inferCache; infer?.closeModel?.() } catch { /* shutdown */ }
+      })
+      return Promise.allSettled([semanticCleanup, typoCleanup]).then(() => {
+        bootLog('released: download aborted, model unloaded')
+      })
     }, 'zh-typo-check: release on unload')
 
     void refreshFromDisk()
