@@ -10,6 +10,7 @@ parser.add_argument('--target-version', default='0.3.0')
 parser.add_argument('--candidate-source', action='store_true', help='Run current source as the old version before a registry update')
 parser.add_argument('--skip-probe', action='store_true')
 parser.add_argument('--with-models', action='store_true', help='Use the pinned public models from the local research cache')
+parser.add_argument('--sensitivity', choices=['low', 'normal', 'high'], default='low')
 parser.add_argument('--operation', choices=['update', 'remove', 'stage'], default='update')
 parser.add_argument('--expect', choices=['applied', 'failed'], default='applied')
 parser.add_argument('--output', type=Path)
@@ -52,7 +53,7 @@ bundles=manifest['dsh']['profile']['bundles']
 for name in ['dsh-zh-typo-check','dsh-upgrade-diagnostic']:
     if name not in bundles: bundles.append(name)
 write_json(p/'package.json',manifest)
-patch='- id: plugin-manager\n  config:\n    idleTimeoutMs: 5000\n- id: zh-typo-check\n  config:\n    sensitivity: low\n'
+patch='- id: plugin-manager\n  config:\n    idleTimeoutMs: 5000\n- id: zh-typo-check\n  config:\n    sensitivity: '+args.sensitivity+'\n'
 (p/'cordis.patch.yml').write_text(patch,encoding='utf-8')
 model_hashes={}
 if args.with_models:

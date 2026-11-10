@@ -25,6 +25,8 @@ export const SETTINGS_FIELDS = [
   'sensitivity',
   'source',
   'customBase',
+  'sentenceSource',
+  'sentenceCustomBase',
 ]
 
 export const DEFAULT_SETTINGS = Object.freeze({
@@ -36,6 +38,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   sensitivity: 'normal',
   source: 'auto',
   customBase: '',
+  sentenceSource: 'official',
+  sentenceCustomBase: '',
 })
 
 const SENSITIVITY_LEVELS = ['low', 'normal', 'high']
@@ -57,7 +61,23 @@ export function normalizeSettings(raw) {
   if (SENSITIVITY_LEVELS.includes(raw.sensitivity)) next.sensitivity = raw.sensitivity
   if (SOURCE_LEVELS.includes(raw.source)) next.source = raw.source
   if (typeof raw.customBase === 'string') next.customBase = raw.customBase
+  // 旧版自定义地址同时用于两套模型。缺少新字段时沿用，避免升级切换下载地址。
+  next.sentenceSource = ['official', 'custom'].includes(raw.sentenceSource)
+    ? raw.sentenceSource : next.source === 'custom' ? 'custom' : 'official'
+  next.sentenceCustomBase = typeof raw.sentenceCustomBase === 'string'
+    ? raw.sentenceCustomBase : next.source === 'custom' ? next.customBase : ''
   return next
+}
+
+/** schema 默认值不代表用户选过新来源；按 user 层判断旧版共享地址是否需要迁移。 */
+function hostSettings(snapshot) {
+  const raw = { ...snapshot.value }
+  if (snapshot.user !== null && typeof snapshot.user === 'object') {
+    for (const field of ['sentenceSource', 'sentenceCustomBase']) {
+      if (!Object.prototype.hasOwnProperty.call(snapshot.user, field)) delete raw[field]
+    }
+  }
+  return normalizeSettings(raw)
 }
 
 /** JSON 文本 → 设置；解析失败返回 null（调用方决定退回什么）。 */
@@ -274,7 +294,7 @@ export class ConfigSettings {
     // 所以整段串行执行，内部触发的快照留到后续回调再处理。
     this.syncing = true
     try {
-      const host = normalizeSettings(snapshot.value)
+      const host = hostSettings(snapshot)
       this.committed = { ...host }
       if (this.namespaceUnavailable) {
         this.namespaceUnavailable = false
@@ -295,6 +315,16 @@ export class ConfigSettings {
             if (this.cacheAtAttach[field] !== host[field] && !this.pendingPush.has(field)) {
               this.pendingPush.set(field, this.cacheAtAttach[field])
               this.value = { ...this.value, [field]: this.cacheAtAttach[field] }
+            }
+          }
+        }
+        // 将旧共享来源固定为独立偏好；之后修改错字来源不再影响整句模型。
+        if (host.source === 'custom' && host.sentenceSource === 'custom') {
+          for (const field of ['sentenceSource', 'sentenceCustomBase']) {
+            if (!Object.prototype.hasOwnProperty.call(snapshot.user ?? {}, field)
+              && !this.pendingPush.has(field)) {
+              this.pendingPush.set(field, host[field])
+              this.value = { ...this.value, [field]: host[field] }
             }
           }
         }
@@ -410,7 +440,7 @@ export class ConfigSettings {
     try {
       const snapshot = this.scope === null ? null : this.scope.getSnapshot()
       if (snapshot !== null && snapshot.status === 'ready' && snapshot.value !== null && typeof snapshot.value === 'object') {
-        recovered = normalizeSettings(snapshot.value)
+        recovered = hostSettings(snapshot)
       }
     } catch (_error) { /* 用上一次提交值兜底 */ }
     const base = recovered ?? this.committed

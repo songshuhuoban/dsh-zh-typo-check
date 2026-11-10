@@ -417,5 +417,44 @@ expect('非对象输入整体退回默认', normalizeSettings('nope'), { ...DEFA
   expect('最终仍有错误提示', bridge.getErrorState()?.code, 'write-failed')
 }
 
+// ---- 20. 旧版共享自定义地址迁移后，两套来源独立，跨重启保留 ----
+{
+  const legacy = { source: 'custom', customBase: 'https://example.test/old-models' }
+  const scope = new FakeScope(legacy, { user: legacy })
+  const bridge = new ConfigSettings()
+  bridge.attach(scope)
+  await flush()
+  expect('旧共享来源迁移到整句模型', bridge.get().sentenceSource, 'custom')
+  expect('schema 默认空地址不吞掉旧地址', bridge.get().sentenceCustomBase, legacy.customBase)
+  expect('新字段一次批量持久化', scope.mutations.length, 1)
+  bridge.set({ source: 'mirror', customBase: 'https://example.test/typo-only' })
+  await flush()
+  expect('修改错字来源不影响整句来源', bridge.get().sentenceSource, 'custom')
+  expect('修改错字地址不影响整句地址', bridge.get().sentenceCustomBase, legacy.customBase)
+  bridge.dispose()
+  const restarted = new ConfigSettings()
+  restarted.attach(scope)
+  expect('重启后整句地址保持独立', restarted.get().sentenceCustomBase, legacy.customBase)
+  restarted.set({ sentenceSource: 'official' })
+  await flush()
+  expect('可单独切回官方整句来源', scope.getSnapshot().user.sentenceSource, 'official')
+  expect('整句切换不改变错字来源', restarted.get().source, 'mirror')
+  restarted.dispose()
+}
+
+// ---- 21. localStorage 旧共享地址和显式独立选择都有明确优先级 ----
+{
+  const legacy = normalizeSettings({ source: 'custom', customBase: 'https://example.test/shared' })
+  expect('旧缓存继承共享地址', legacy.sentenceCustomBase, legacy.customBase)
+  const independent = normalizeSettings({ ...legacy, sentenceSource: 'official', sentenceCustomBase: '' })
+  expect('显式独立选择不被旧字段覆盖', [independent.sentenceSource, independent.sentenceCustomBase], ['official', ''])
+  const scope = new FakeScope({}, { user: {} })
+  const bridge = new ConfigSettings({ storage: memoryStorage({ k: JSON.stringify({ source: 'custom', customBase: legacy.customBase }) }), storageKey: 'k' })
+  bridge.attach(scope)
+  await flush()
+  expect('旧本地缓存同时迁移两套模型来源', [scope.state.user.source, scope.state.user.sentenceSource, scope.state.user.sentenceCustomBase], ['custom', 'custom', legacy.customBase])
+  bridge.dispose()
+}
+
 console.log(`\n通过 ${pass} / ${pass + fail}`)
 if (fail > 0) process.exit(1)

@@ -49,6 +49,8 @@ node src/demo.mjs                      # 真实错句
 node src/adversarial.mjs               # 正常句子误报
 node tools/config-schema-test.mjs      # 宿主 Config：字段、volatile、默认值（需 schemastery）
 node tools/client-config-wiring-test.mjs  # 客户端配置接线（加载构建产物，假 DSH 上下文）
+node tools/client-verdict-test.mjs        # 整句/局部提示、模型猜测优先级、多行几何
+node tools/client-model-card-test.mjs     # 状态恢复、来源输入失焦保存、拒绝后保留草稿
 node tools/uninstall-test.mjs          # 卸载 / 升级生命周期（中断下载、释放资源、重新加载）
 node tools/model-process-test.mjs      # 真实原生库占用、崩溃恢复、超时、父进程退出
 node tools/model-service-test.mjs      # 下载 / 校验 / 分发 / 删除

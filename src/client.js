@@ -68,12 +68,6 @@ window.__ModuleLoader__.load({
     const STORAGE_KEY = 'dsh.zh-typo-check.ignored'
     const WARN_TOKEN = '--dsw-alias-state-warn-primary'
 
-    /** 校验阶段的滑动条动画（React 内联样式没法写 @keyframes，用一段全局样式）。 */
-    const ANIMATION_CSS = 
-      '@keyframes zh-typo-indeterminate {'
-      + ' 0% { margin-left: -30%; } 100% { margin-left: 100%; }'
-      + '}'
-
     const STRINGS = {
       zh: {
         title: '中文检查',
@@ -82,53 +76,50 @@ window.__ModuleLoader__.load({
     fluencyBody: '整句意思可能不连贯',
     optFluencyLabel: '整句检查',
     optFluencyHint: '中文、英文和混排；只提示，不改写。',
-    semanticAbsent: '下载约 27 MB 后生效。',
     semanticReady: '已就绪 · 本地运行',
     semanticDisabled: '已关闭',
     semanticGlobalOff: '检查已暂停',
-    semanticEnable: '开启整句检查',
-    semanticDownload: '下载整句模型',
     semanticRemove: '删除整句模型',
     semanticRetry: '重试下载',
-    semanticUnavailable: '整句检查不可用',
     semanticRuntime: '运行时不可用，请重新安装插件。',
-
-        sectionIntro: '检查错字、标点和整句语义。',
         options: '检查设置',
         on: '开',
         off: '关',
         optEnabledLabel: '启用检查',
-        optEnabledHint: '关掉之后输入框完全不受影响。',
         optPunctLabel: '检查半角标点',
-        optPunctHint: '把 , ? ; 这类半角标点标出来。',
         optModelLabel: '中文错字增强',
-        optModelHint: '需另行下载约 104 MB；补充单字替换建议。',
+        optModelHint: '补充单字替换建议；整句异常时暂停。',
         optSensitivityLabel: '错字灵敏度',
         optSensitivityHint: '激进会多报，保守会少报。',
         sensLow: '保守',
         sensNormal: '标准',
         sensHigh: '激进',
         optSourceLabel: '下载来源',
-        optSourceHint: '用于错字模型；整句模型从 GitHub 下载。自定义地址对两者生效。',
+        optional: '可选',
+        sentenceSize: '约 27 MB',
+        typoSize: '约 104 MB',
+        stateFailed: '下载失败',
+        typoRemove: '删除错字模型',
+        downloadSettings: '下载设置',
+        moreSettings: '更多设置',
+        customBaseLabel: '自定义下载地址',
+        sentencePlaceholder: 'https://你的镜像/semantic-r13',
+        sourceGitHub: 'GitHub（官方）',
+        sentencePaused: '已暂停（整句异常）',
         sourceAuto: '自动',
         sourceMirror: '国内镜像',
         sourceOfficial: '官方',
         sourceCustom: '自定义',
         customPlaceholder: 'https://你的镜像/…/macbert4csc-base-chinese/resolve/main',
         customInvalid: '地址需要以 http:// 或 https:// 开头',
-        settingsSaveFailed: '设置没能保存：{error}',
-        settingsNamespaceUnavailable: '这个 DSH 版本没有提供本插件的配置，设置只会留在当前页面。',
-        model: '中文错字增强',
+        settingsSaveFailed: '设置未保存，请重试。',
+        settingsNamespaceUnavailable: '设置仅在当前页面生效，请更新 DSH。',
         stateAbsent: '未安装',
         stateDownloading: '下载中 {percent}%',
         stateVerifying: '校验中',
         statePartial: '下载未完成',
         resume: '继续下载',
-        downloadingFile: '{file}（{index}/{count}）· {percent}%',
-        partialDetail: '已下载 {size}，还差一部分',
-        actionFailed: '操作失败：{error}',
         lastCheck: '最近模型检查：错字{typo} · 整句{sentence} · {ms} ms',
-        lastCheckIdle: '输入一句话后可查看检查结果。',
         sentenceWarning: '已提示',
         sentenceClear: '未提示',
         sentenceLong: '超出长度，未检查',
@@ -138,14 +129,9 @@ window.__ModuleLoader__.load({
         stateError: '出错：{error}',
         stateChecking: '检查中…',
         stateUnavailable: '宿主服务不可用',
+        refreshStatus: '刷新状态',
         cancel: '取消',
-        remove: '删除',
-        reDownload: '重新下载',
         download: '下载模型',
-        noteReady: '本地运行。删除只影响中文错字增强。',
-        noteAbsent: '可选下载约 104 MB，支持国内镜像。',
-        runtimeMissing: '推理运行时缺失（onnxruntime-node 未安装），模型暂时无法加载。这只影响语义检查，规则检查照常工作。',
-        hostUnavailable: '宿主服务不可用（{error}）。若刚更新过插件，重启 DSH 后生效。',
       },
       en: {
         title: 'Chinese check',
@@ -154,53 +140,50 @@ window.__ModuleLoader__.load({
     fluencyBody: 'The sentence may be incoherent',
     optFluencyLabel: 'Sentence checking',
     optFluencyHint: 'Chinese, English and mixed text. Warnings only.',
-    semanticAbsent: 'Download about 27 MB to enable.',
     semanticReady: 'Ready · Runs locally',
     semanticDisabled: 'Off',
     semanticGlobalOff: 'Checking paused',
-    semanticEnable: 'Enable sentence checking',
-    semanticDownload: 'Download sentence model',
     semanticRemove: 'Remove sentence model',
     semanticRetry: 'Retry download',
-    semanticUnavailable: 'Sentence checking unavailable',
     semanticRuntime: 'Runtime unavailable. Reinstall the plugin.',
-
-        sectionIntro: 'Check typos, punctuation and whole-sentence meaning.',
         options: 'Checking options',
         on: 'On',
         off: 'Off',
         optEnabledLabel: 'Enable checking',
-        optEnabledHint: 'Turn off to leave the composer completely untouched.',
         optPunctLabel: 'Check half-width punctuation',
-        optPunctHint: 'Flags ASCII , ? ; and friends.',
         optModelLabel: 'Chinese typo enhancement',
-        optModelHint: 'Optional 104 MB download for character replacement suggestions.',
+        optModelHint: 'Character suggestions, paused for incoherent sentences.',
         optSensitivityLabel: 'Typo sensitivity',
         optSensitivityHint: 'Aggressive flags more; conservative flags less.',
         sensLow: 'Conservative',
         sensNormal: 'Normal',
         sensHigh: 'Aggressive',
         optSourceLabel: 'Download source',
-        optSourceHint: 'For the typo model. The sentence model uses GitHub. Custom applies to both.',
+        optional: 'Optional',
+        sentenceSize: 'About 27 MB',
+        typoSize: 'About 104 MB',
+        stateFailed: 'Download failed',
+        typoRemove: 'Remove typo model',
+        downloadSettings: 'Download settings',
+        moreSettings: 'More settings',
+        customBaseLabel: 'Custom download URL',
+        sentencePlaceholder: 'https://your-mirror/semantic-r13',
+        sourceGitHub: 'GitHub (official)',
+        sentencePaused: 'paused (incoherent sentence)',
         sourceAuto: 'Auto',
         sourceMirror: 'China mirror',
         sourceOfficial: 'Official',
         sourceCustom: 'Custom',
         customPlaceholder: 'https://your-mirror/…/macbert4csc-base-chinese/resolve/main',
         customInvalid: 'The address must start with http:// or https://',
-        settingsSaveFailed: 'Settings were not saved: {error}',
-        settingsNamespaceUnavailable: 'This DSH version does not expose this plugin’s configuration, so settings only apply to this page.',
-        model: 'Chinese typo enhancement',
+        settingsSaveFailed: 'Could not save. Please try again.',
+        settingsNamespaceUnavailable: 'Settings apply to this page only. Update DSH.',
         stateAbsent: 'Not installed',
         stateDownloading: 'Downloading {percent}%',
         stateVerifying: 'Verifying',
         statePartial: 'Download incomplete',
         resume: 'Resume download',
-        downloadingFile: '{file} ({index}/{count}) · {percent}%',
-        partialDetail: '{size} downloaded, the rest is missing',
-        actionFailed: 'Action failed: {error}',
         lastCheck: 'Last model check: Typos: {typo} · Sentence: {sentence} · {ms} ms',
-        lastCheckIdle: 'Type a sentence to see check results.',
         sentenceWarning: 'warning',
         sentenceClear: 'no warning',
         sentenceLong: 'too long, not checked',
@@ -210,14 +193,9 @@ window.__ModuleLoader__.load({
         stateError: 'Failed: {error}',
         stateChecking: 'Checking…',
         stateUnavailable: 'Host service unavailable',
+        refreshStatus: 'Refresh status',
         cancel: 'Cancel',
-        remove: 'Remove',
-        reDownload: 'Download again',
         download: 'Download model',
-        noteReady: 'Runs locally. Removing it only disables Chinese typo enhancement.',
-        noteAbsent: 'Optional 104 MB download with mirror support.',
-        runtimeMissing: 'The inference runtime (onnxruntime-node) is missing, so the model cannot load. Rule-based checking is unaffected.',
-        hostUnavailable: 'Host service unavailable ({error}). If the plugin was just updated, restart DSH.',
       },
     }
 
@@ -374,11 +352,11 @@ window.__ModuleLoader__.load({
       // Never fight the IME: a composing draft is not yet what the user meant.
       if (root.hasAttribute('data-composer-composing') || root.closest('[data-composer-composing]') !== null) return null
       const issues = found.filter((issue) => !ignored.has(ignoreKey(issue)))
-      // 没有任何具体错字时才提通顺度：两个提示叠在一起会互相抢注意力，
-      // 而且错字是确定性的，优先给它。
-      const sentenceLevel = issues.length === 0 && fluency !== null && fluency !== undefined
+      // 整句异常独立于局部规则；安装可选错字模型不能让整句提示消失。
+      const sentenceLevel = fluency !== null && fluency !== undefined
         && !ignored.has('fluency:' + draft)
       if (issues.length === 0 && !sentenceLevel) return null
+      const sentenceIndex = issues.length
       if (sentenceLevel) {
         issues.push({
           start: 0,
@@ -404,6 +382,11 @@ window.__ModuleLoader__.load({
       }
       if (usable === 0) return null
       const marks = []
+      // 局部标记排在前面，鼠标命中时优先显示具体问题。
+      for (let i = 0; i < sentenceIndex; i += 1) {
+        if (issues[i].end > usable) continue
+        for (const rect of rangeRects(index, issues[i].start, issues[i].end)) marks.push({ ...rect, index: i })
+      }
       if (sentenceLevel) {
         // 整句提示：按「视觉行」切段。每段同时带着整行的矩形——
         // 命中判定读的是 top/height，所以要覆盖整行文字，不能只留一条线，
@@ -434,15 +417,10 @@ window.__ModuleLoader__.load({
             width: row.right - row.left,
             height: row.bottom - row.top,
             // 虚线画在行底，命中区域是整行文字
-            line: row.bottom,
-            index: 0,
+            line: row.bottom + (sentenceIndex > 0 ? 3 : 0),
+            index: sentenceIndex,
             sentence: true,
           })
-        }
-      } else {
-        for (let i = 0; i < issues.length; i += 1) {
-          if (issues[i].end > usable) continue
-          for (const rect of rangeRects(index, issues[i].start, issues[i].end)) marks.push({ ...rect, index: i })
         }
       }
       if (marks.length === 0) return null
@@ -454,7 +432,10 @@ window.__ModuleLoader__.load({
      *
      * 同一处两边都报了就以规则为准——规则的判据是确定性的，模型只是补盲区。
      */
-    function mergeModelIssues(base, modelIssues, text) {
+    function mergeModelIssues(base, modelIssues, text, sentenceWarning = false) {
+      // 句子不连贯时，MLM 的单字替换缺乏可信上下文（例如误把“危”猜成“凸”）。
+      // 只暂停模型猜测；确定性的规则仍与整句提示一起显示。
+      if (sentenceWarning) return base
       if (!Array.isArray(modelIssues) || modelIssues.length === 0) return base
       const merged = base.slice()
       for (const hit of modelIssues) {
@@ -501,6 +482,7 @@ window.__ModuleLoader__.load({
       for (let i = 0; i < a.length; i += 1) {
         if (a[i].left !== b[i].left || a[i].top !== b[i].top) return false
         if (a[i].width !== b[i].width || a[i].index !== b[i].index) return false
+        if (a[i].height !== b[i].height || a[i].line !== b[i].line || a[i].sentence !== b[i].sentence) return false
       }
       return true
     }
@@ -562,13 +544,13 @@ window.__ModuleLoader__.load({
               fromFluency = prefs.fluency && record.fluency?.low === true ? record.fluency : null
             }
           }
-          const merged = mergeModelIssues(found, fromModel, text)
+          const merged = mergeModelIssues(found, fromModel, text, fromFluency !== null)
           next = computeView(text, draftRev, merged, ignoredRef.current, waveRef.current, ignoredRev + ':' + modelVersion, fromFluency)
         }
         setView((previous) => (sameView(previous, next) ? previous : next))
         setActive(null)
         // 偏好参与渲染结果，必须进依赖：关掉标点检查后要立刻生效
-      }, [draft, draftRev, ignoredRev, modelVersion, prefs.enabled, prefs.punctuation, prefs.model, prefs.fluency])
+      }, [draft, draftRev, ignoredRev, modelVersion, prefs.enabled, prefs.punctuation, prefs.model, prefs.fluency, prefs.sensitivity])
 
       /**
        * 模型检查：停手 400 ms 后问一次宿主。
@@ -605,14 +587,15 @@ window.__ModuleLoader__.load({
             .then((body) => {
               const elapsed = Date.now() - startedAt
               const state = body === null ? 'HTTP 错误' : body.state
-              const issues = body !== null && Array.isArray(body.issues) ? body.issues.length : 0
+              const sentenceWarning = prefs.fluency && body?.fluency?.low === true
+              const issues = !sentenceWarning && body !== null && Array.isArray(body.issues) ? body.issues.length : 0
               const detail = body === null
                 ? ''
                 : [body.reason, body.chars !== undefined ? body.chars + ' 字' : '', body.aligned === false ? '分词未对齐' : '']
                   .filter((part) => typeof part === 'string' && part !== '').join(' · ')
               const sentence = body?.semantic?.state === 'ready' ? body.semantic.warning ? 'Warning' : 'Clear'
                 : body?.semantic?.state === 'disabled' ? 'Off' : body?.semantic?.state === 'too-long' ? 'Long' : 'Unavailable'
-              const typo = body?.typo?.state === 'ready' ? 'Ready' : body?.typo?.state === 'disabled' ? 'Off' : 'Unavailable'
+              const typo = body?.typo?.state === 'ready' ? sentenceWarning ? 'Paused' : 'Ready' : body?.typo?.state === 'disabled' ? 'Off' : 'Unavailable'
               checkLogStore.set({ state, issues, typo, sentence, ms: elapsed, at: Date.now(), detail: body?.semantic?.error || body?.error || detail })
               if (body === null || body.state !== 'ready' || !Array.isArray(body.issues)) {
                 // 这一次没成，下次文本再变还有机会——但不能把这句永久钉死成"查过了"。
@@ -1021,505 +1004,270 @@ window.__ModuleLoader__.load({
       }
     }
 
+    /** 固定控件宽度，让长说明换行，不把按钮挤成逐字竖排。 */
     function prefRow(key, label, hint, control) {
-      return React.createElement('div', {
-        key,
-        style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 0' },
-      }, [
-        React.createElement('div', { key: 'text', style: { display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 } }, [
-          React.createElement('span', {
-            key: 'label',
-            style: { fontSize: '13px', color: 'var(--dsw-alias-label-primary)' },
-          }, label),
-          React.createElement('span', {
-            key: 'hint',
-            style: { fontSize: '12px', color: 'var(--dsw-alias-label-secondary)' },
-          }, hint),
+      return React.createElement('div', { key, className: 'zh-check-pref' }, [
+        React.createElement('div', { key: 'text', className: 'zh-check-copy' }, [
+          React.createElement('span', { key: 'label', className: 'zh-check-label' }, label),
+          hint ? React.createElement('span', { key: 'hint', className: 'zh-check-muted' }, hint) : null,
         ]),
-        React.createElement('div', { key: 'spacer', style: { flex: 1 } }),
         control,
       ])
     }
 
-    function toggleControl(t, checked, onToggle) {
+    function toggleControl(t, checked, onToggle, label) {
       return React.createElement('button', {
-        type: 'button',
-        onClick: onToggle,
-        style: {
-          appearance: 'none',
-          cursor: 'pointer',
-          fontFamily: 'inherit',
-          minWidth: '52px',
-          padding: '4px 12px',
-          borderRadius: '999px',
-          fontSize: '12px',
-          lineHeight: '18px',
-          border: checked ? 'none' : '1px solid var(--dsw-alias-border-l2)',
-          background: checked ? 'var(--dsw-alias-brand-primary)' : 'transparent',
-          color: checked ? '#ffffff' : 'var(--dsw-alias-label-secondary)',
-        },
+        type: 'button', role: 'switch', 'aria-checked': checked, 'aria-label': label,
+        onClick: onToggle, className: 'zh-check-toggle', style: buttonStyle(checked),
       }, checked ? t('on') : t('off'))
     }
 
     function segmentStyle(active) {
-      return {
-        appearance: 'none',
-        cursor: 'pointer',
-        fontFamily: 'inherit',
-        padding: '4px 10px',
-        borderRadius: '7px',
-        fontSize: '12px',
-        lineHeight: '18px',
-        border: active ? 'none' : '1px solid var(--dsw-alias-border-l2)',
-        background: active ? 'var(--dsw-alias-brand-primary)' : 'transparent',
-        color: active ? '#ffffff' : 'var(--dsw-alias-label-secondary)',
-      }
+      return { ...buttonStyle(active), padding: '4px 10px', flex: '1 0 auto', whiteSpace: 'nowrap' }
     }
 
-    function SemanticModelCard({ t, prefs }) {
+    const SETTINGS_CSS = `
+      [data-zh-typo-settings] { container-type: inline-size; width: 100%; min-width: 0; }
+      [data-zh-typo-settings] * { box-sizing: border-box; }
+      .zh-check-card { border: 1px solid var(--dsw-alias-border-l1); border-radius: 10px;
+        padding: 14px 16px; background: var(--dsw-alias-bg-layer-1); min-width: 0; }
+      .zh-check-pref, .zh-check-header, .zh-check-status { display: flex; align-items: center; gap: 12px; }
+      .zh-check-pref { padding: 8px 0; }
+      .zh-check-copy { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
+      .zh-check-label { font-size: 13px; color: var(--dsw-alias-label-primary); line-height: 20px; }
+      .zh-check-muted { font-size: 12px; color: var(--dsw-alias-label-secondary); line-height: 18px; }
+      .zh-check-toggle { flex: 0 0 auto; min-width: 48px; white-space: nowrap; }
+      .zh-check-header { justify-content: space-between; }
+      .zh-check-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+      .zh-check-badge { font-size: 11px; color: var(--dsw-alias-label-secondary); white-space: nowrap;
+        border: 1px solid var(--dsw-alias-border-l1); border-radius: 4px; padding: 0 5px; }
+      .zh-check-status { justify-content: space-between; min-height: 30px; margin-top: 8px; }
+      .zh-check-meta { display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; min-width: 0; }
+      .zh-check-meta > span { white-space: nowrap; }
+      .zh-check-actions { display: flex; flex: 0 0 auto; gap: 6px; }
+      .zh-check-actions button { white-space: nowrap; }
+      .zh-check-advanced { margin-top: 8px; font-size: 12px; color: var(--dsw-alias-label-secondary); }
+      .zh-check-advanced > summary { cursor: pointer; width: fit-content; padding: 4px 0; }
+      .zh-check-advanced[open] > summary { margin-bottom: 8px; }
+      .zh-check-field { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(160px, 260px);
+        align-items: center; gap: 8px 12px; margin-top: 10px; }
+      .zh-check-select, .zh-check-url { min-width: 0; width: 100%; font: inherit; font-size: 12px;
+        border: 1px solid var(--dsw-alias-border-l2); border-radius: 7px; padding: 6px 10px;
+        color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-base); }
+      .zh-check-segments { display: flex; gap: 4px; }
+      .zh-check-url-row { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+      .zh-check-error { font-size: 12px; line-height: 18px; overflow-wrap: anywhere;
+        color: var(--dsw-alias-state-error-primary); margin-top: 6px; }
+      .zh-check-progress { width: 100%; height: 6px; margin-top: 8px; }
+      [data-zh-typo-settings] button:focus-visible, [data-zh-typo-settings] summary:focus-visible,
+      [data-zh-typo-settings] input:focus-visible, [data-zh-typo-settings] select:focus-visible {
+        outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 3px;
+      }
+      @container (max-width: 420px) {
+        .zh-check-field { grid-template-columns: minmax(0, 1fr); }
+        .zh-check-card { padding: 12px; }
+        .zh-check-segments > button { padding: 4px 8px !important; }
+      }
+    `
+
+    function trashIcon() {
+      return React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none',
+        stroke: 'currentColor', strokeWidth: 1.6, 'aria-hidden': true },
+      React.createElement('path', { d: 'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7' }))
+    }
+
+    /** 保存失败用短暂提示反馈；输入框自己保留未提交草稿。 */
+    function SettingsSaveNotice({ error, t }) {
+      const [visible, setVisible] = React.useState(false)
+      React.useEffect(() => {
+        setVisible(error?.code === 'write-failed')
+        const timer = window.setTimeout(() => setVisible(false), 4000)
+        return () => window.clearTimeout(timer)
+      }, [error])
+      return visible ? React.createElement('div', { role: 'alert', title: error?.message,
+        style: { position: 'fixed', bottom: '24px', right: '24px', zIndex: 2000, padding: '10px 14px',
+          maxWidth: 'calc(100vw - 48px)', borderRadius: '8px', boxShadow: '0 4px 16px #0002',
+          fontSize: '13px', background: 'var(--dsw-alias-bg-layer-1)', color: 'var(--dsw-alias-state-error-primary)',
+          pointerEvents: 'none' },
+      }, t('settingsSaveFailed')) : null
+    }
+
+    /** 两套模型共用同一张状态卡，来源和操作始终只作用于本卡。 */
+    function ModelCard({ t, prefs, sentence }) {
       const [status, setStatus] = React.useState(null)
-      const [error, setError] = React.useState(null)
+      const [pollError, setPollError] = React.useState(null)
+      const [actionError, setActionError] = React.useState(null)
       const [busy, setBusy] = React.useState(false)
       const [tick, setTick] = React.useState(0)
       const observed = React.useRef('')
-      const endpoint = MODEL_ENDPOINT + 'semantic/'
+      const settle = React.useRef(0)
+      const settingsError = useSettingsError()
+      const sourceKey = sentence ? 'sentenceSource' : 'source'
+      const baseKey = sentence ? 'sentenceCustomBase' : 'customBase'
+      const enabledKey = sentence ? 'fluency' : 'model'
+      const label = t(sentence ? 'optFluencyLabel' : 'optModelLabel')
+      const endpoint = MODEL_ENDPOINT + (sentence ? 'semantic/' : '')
+      const id = React.useId()
+      const [baseDraft, setBaseDraft] = React.useState(prefs[baseKey])
+      const baseRef = React.useRef(baseDraft)
+      const focused = React.useRef(false)
+      baseRef.current = baseDraft
       React.useEffect(() => {
-        let alive = true, timer
+        const failed = settingsError?.code === 'write-failed' && settingsError.fields.includes(baseKey)
+        if (!shouldKeepDraft(baseRef.current, prefs[baseKey], { focused: focused.current, failed })) setBaseDraft(prefs[baseKey])
+      }, [prefs[baseKey], settingsError, baseKey])
+      const commitBase = () => {
+        const value = baseRef.current.trim()
+        if (value !== configSettings.get()[baseKey]) settingsStore.set({ [baseKey]: value })
+      }
+      React.useEffect(() => {
+        let alive = true, timer, failures = 0
         const poll = async () => {
           try {
             const response = await fetch(endpoint + 'status', { cache: 'no-store' })
             if (!response.ok) throw new Error('HTTP ' + response.status)
             const next = await response.json()
             if (!alive) return
-            setStatus(next); setError(null)
-            const key = [next.state, next.revision, next.runtime].join(':')
+            setStatus(next); setPollError(null); failures = 0
+            const key = [next.state, next.revision, next.bytes, next.runtime].join(':')
             if (observed.current !== key) { observed.current = key; modelsChanged() }
-            if (next.state === 'downloading' || next.state === 'verifying') timer = window.setTimeout(poll, 400)
-          } catch (failure) { if (alive) setError(failure.message) }
+            if (next.state === 'downloading' || next.state === 'verifying' || Date.now() < settle.current) {
+              timer = window.setTimeout(poll, 400)
+            }
+          } catch (failure) {
+            if (!alive) return
+            setPollError(failure.message)
+            failures += 1
+            // 短暂的进程重启/503 不应把下载进度永久冻结。限次后保留手动刷新。
+            if (failures <= 3) timer = window.setTimeout(poll, 1000 * 2 ** (failures - 1))
+          }
         }
         void poll()
         return () => { alive = false; window.clearTimeout(timer) }
-      }, [tick])
-      const act = async action => {
-        setBusy(true); setError(null)
+      }, [tick, endpoint])
+      const act = async (action) => {
+        setBusy(true); setActionError(null); settle.current = Date.now() + 5000
         try {
-          const base = prefs.source === 'custom' ? '?base=' + encodeURIComponent(prefs.customBase.trim()) : ''
-          const response = await fetch(endpoint + action + (action === 'download' ? base : ''), { cache: 'no-store' })
+          let url = endpoint + action
+          if (action === 'download') {
+            const source = configSettings.get()[sourceKey]
+            const query = new URLSearchParams()
+            if (!sentence) query.set('source', source)
+            if (source === 'custom') query.set('base', baseRef.current.trim())
+            if (query.size > 0) url += '?' + query
+          }
+          const response = await fetch(url, { cache: 'no-store' })
           const next = await response.json()
           if (!response.ok) throw new Error(next.error || 'HTTP ' + response.status)
-          setStatus(next); modelsChanged(); setTick(value => value + 1)
-        } catch (failure) { setError(failure.message) }
-        finally { setBusy(false) }
+          setStatus(next); modelsChanged()
+        } catch (failure) { setActionError(failure.message) }
+        finally { setBusy(false); setTick(value => value + 1) }
       }
       const state = status?.state ?? 'unknown'
       const downloading = state === 'downloading' || state === 'verifying'
       const runtimeMissing = state === 'ready' && status.runtime === false
-      const label = runtimeMissing ? t('semanticRuntime') : state === 'ready'
-        ? !prefs.enabled ? t('semanticGlobalOff') : prefs.fluency ? t('semanticReady') : t('semanticDisabled')
+      const progress = status?.total > 0 ? Math.min(1, status.bytes / status.total) : 0
+      const stateText = pollError ? t('stateUnavailable') : runtimeMissing ? t('semanticRuntime') : state === 'ready'
+        ? !prefs.enabled ? t('semanticGlobalOff') : prefs[enabledKey] ? t('semanticReady') : t('semanticDisabled')
         : state === 'verifying' ? t('stateVerifying') : state === 'downloading'
-          ? format(t('stateDownloading'), { percent: Math.round(100 * status.bytes / status.total) })
-          : state === 'error' ? status.error : state === 'unknown' ? t('stateChecking') : t('semanticAbsent')
+          ? format(t('stateDownloading'), { percent: Math.round(100 * progress) })
+          : state === 'partial' ? t('statePartial') : state === 'error' ? t('stateFailed')
+            : state === 'unknown' ? pollError ? t('stateUnavailable') : t('stateChecking') : t('stateAbsent')
+      const valid = isValidBase(baseDraft)
+      const saveFailed = settingsError?.code === 'write-failed' && settingsError.fields.includes(baseKey)
+      const removeLabel = t(sentence ? 'semanticRemove' : 'typoRemove')
+      const error = actionError || pollError || (state === 'error' ? status?.error : null)
       return React.createElement('section', {
-        'data-zh-semantic-settings': '', 'aria-label': t('optFluencyLabel'),
-        style: { border: '1px solid var(--dsw-alias-border-l1)', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--dsw-alias-bg-layer-1)' },
+        'data-zh-model': sentence ? 'sentence' : 'typo', 'aria-label': label, className: 'zh-check-card',
       }, [
-        React.createElement('div', { key: 'header', style: { display: 'flex', alignItems: 'center', gap: '12px' } }, [
-          React.createElement('span', { key: 'title', style: { fontSize: '13px', fontWeight: 500, flex: 1 } }, t('optFluencyLabel')),
-          React.createElement('button', { key: 'toggle', type: 'button', role: 'switch', 'aria-checked': prefs.fluency,
-            'aria-label': t('optFluencyLabel'), title: t('optFluencyLabel'),
-            onClick: () => settingsStore.set({ fluency: !prefs.fluency }), style: buttonStyle(prefs.fluency) }, prefs.fluency ? t('on') : t('off')),
+        React.createElement('div', { key: 'header', className: 'zh-check-header' }, [
+          React.createElement('div', { key: 'title', className: 'zh-check-title' }, [
+            React.createElement('span', { key: 'label', className: 'zh-check-label', style: { fontWeight: 500 } }, label),
+            !sentence ? React.createElement('span', { key: 'optional', className: 'zh-check-badge' }, t('optional')) : null,
+          ]),
+          toggleControl(t, prefs[enabledKey], () => settingsStore.set({ [enabledKey]: !prefs[enabledKey] }), label),
         ]),
-        React.createElement('div', { key: 'hint', style: { fontSize: '12px', color: 'var(--dsw-alias-label-secondary)' } }, t('optFluencyHint')),
-        React.createElement('div', { key: 'state', role: 'status', 'aria-live': 'polite', style: { fontSize: '12px',
-          color: error || state === 'error' || runtimeMissing ? 'var(--dsw-alias-state-error-primary)' : 'var(--dsw-alias-label-secondary)' } }, error || label),
-        downloading ? React.createElement('progress', { key: 'progress', value: state === 'verifying' ? undefined : status.bytes,
-          max: status.total, 'aria-label': t('optFluencyLabel'), style: { width: '100%', height: '6px' } }) : null,
-        React.createElement('div', { key: 'actions', style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' } }, [
-          state === 'absent' || state === 'error' ? React.createElement('button', { key: 'download', type: 'button', disabled: busy || (prefs.source === 'custom' && !isValidBase(prefs.customBase)),
-            onClick: () => act('download'), style: buttonStyle(true) }, state === 'error' ? t('semanticRetry') : t('semanticDownload')) : null,
-          downloading ? React.createElement('button', { key: 'cancel', type: 'button', disabled: busy, onClick: () => act('cancel'), style: buttonStyle(false) }, t('cancel')) : null,
-          state === 'ready' ? React.createElement('button', { key: 'remove', type: 'button', disabled: busy, title: t('semanticRemove'), 'aria-label': t('semanticRemove'),
-            onClick: () => act('delete'), style: buttonStyle(false) }, React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, 'aria-hidden': true },
-            React.createElement('path', { d: 'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7' }))) : null,
+        React.createElement('div', { key: 'hint', className: 'zh-check-muted', style: { marginTop: '4px' } }, t(sentence ? 'optFluencyHint' : 'optModelHint')),
+        React.createElement('div', { key: 'status', className: 'zh-check-status' }, [
+          React.createElement('div', { key: 'meta', className: 'zh-check-meta zh-check-muted', role: 'status', 'aria-live': 'polite' }, [
+            React.createElement('span', { key: 'state' }, stateText),
+            React.createElement('span', { key: 'size' }, state === 'ready' ? formatBytes(status.bytes) : t(sentence ? 'sentenceSize' : 'typoSize')),
+          ]),
+          React.createElement('div', { key: 'actions', className: 'zh-check-actions' }, [
+            pollError ? React.createElement('button', { key: 'refresh', type: 'button', title: t('refreshStatus'),
+              'aria-label': t('refreshStatus'), onClick: () => setTick(value => value + 1), style: buttonStyle(false) },
+            React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, 'aria-hidden': true },
+              React.createElement('path', { d: 'M20 7v5h-5M4 17v-5h5M6.1 6.1a8 8 0 0 1 13.3 3.4M17.9 17.9A8 8 0 0 1 4.6 14.5' }))) : null,
+            ['absent', 'error', 'partial'].includes(state) ? React.createElement('button', {
+              key: 'download', type: 'button', disabled: busy || (prefs[sourceKey] === 'custom' && !valid),
+              onClick: () => act('download'), style: buttonStyle(true),
+            }, t(state === 'partial' ? 'resume' : state === 'error' ? 'semanticRetry' : 'download')) : null,
+            downloading ? React.createElement('button', { key: 'cancel', type: 'button', disabled: busy,
+              onClick: () => act('cancel'), style: buttonStyle(false) }, t('cancel')) : null,
+            state === 'ready' ? React.createElement('button', { key: 'remove', type: 'button', disabled: busy,
+              title: removeLabel, 'aria-label': removeLabel, onClick: () => act('delete'), style: buttonStyle(false) }, trashIcon()) : null,
+          ]),
+        ]),
+        downloading && !pollError ? React.createElement('progress', { key: 'progress', className: 'zh-check-progress',
+          value: state === 'verifying' ? undefined : status.bytes, max: status.total || 1, 'aria-label': label }) : null,
+        error || runtimeMissing ? React.createElement('div', { key: 'error', role: 'alert', className: 'zh-check-error' }, error || t('semanticRuntime')) : null,
+        React.createElement('details', { key: 'advanced', className: 'zh-check-advanced' }, [
+          React.createElement('summary', { key: 'summary' }, t(sentence ? 'downloadSettings' : 'moreSettings')),
+          !sentence ? React.createElement('div', { key: 'sensitivity', className: 'zh-check-field' }, [
+            React.createElement('span', { key: 'label', id: id + '-sensitivity', title: t('optSensitivityHint') }, t('optSensitivityLabel')),
+            React.createElement('div', { key: 'segments', className: 'zh-check-segments', role: 'group', 'aria-labelledby': id + '-sensitivity' },
+              ['low', 'normal', 'high'].map(level => React.createElement('button', { key: level, type: 'button',
+                'aria-pressed': prefs.sensitivity === level, onClick: () => settingsStore.set({ sensitivity: level }),
+                style: segmentStyle(prefs.sensitivity === level) }, t(level === 'low' ? 'sensLow' : level === 'high' ? 'sensHigh' : 'sensNormal')))),
+          ]) : null,
+          React.createElement('div', { key: 'source', className: 'zh-check-field' }, [
+            React.createElement('label', { key: 'label', htmlFor: id + '-source' }, t('optSourceLabel')),
+            React.createElement('select', { key: 'select', id: id + '-source', className: 'zh-check-select', value: prefs[sourceKey],
+              onChange: event => settingsStore.set({ [sourceKey]: event.target.value }) },
+            (sentence ? ['official', 'custom'] : ['auto', 'mirror', 'official', 'custom']).map(value => React.createElement('option', { key: value, value },
+              t(value === 'auto' ? 'sourceAuto' : value === 'mirror' ? 'sourceMirror' : value === 'official' ? sentence ? 'sourceGitHub' : 'sourceOfficial' : 'sourceCustom')))),
+          ]),
+          prefs[sourceKey] === 'custom' ? React.createElement('div', { key: 'base', className: 'zh-check-url-row' }, [
+            React.createElement('label', { key: 'label', htmlFor: id + '-base' }, t('customBaseLabel')),
+            React.createElement('input', { key: 'input', id: id + '-base', type: 'url', spellCheck: false,
+              className: 'zh-check-url', placeholder: t(sentence ? 'sentencePlaceholder' : 'customPlaceholder'), value: baseDraft,
+              'aria-invalid': !valid || saveFailed, 'aria-describedby': !valid ? id + '-invalid' : undefined,
+              onChange: event => setBaseDraft(event.target.value), onFocus: () => { focused.current = true },
+              onBlur: () => { focused.current = false; commitBase() },
+              onKeyDown: event => { if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur() } },
+            }),
+            !valid ? React.createElement('span', { key: 'invalid', id: id + '-invalid', className: 'zh-check-error' }, t('customInvalid')) : null,
+          ]) : null,
         ]),
       ])
     }
 
-    /** 设置页与插件详情页共用的面板；head 控制要不要自己画标题。 */
+    /** 设置页和插件详情页共用；全局开关、独立模型卡和可选增强各出现一次。 */
     function ZhTypoPanel(props) {
-      // 槽位没注入 t 时退回注册期绑定好的那个（同样是"调用时读当前语言"）
       const t = typeof props.t === 'function' ? props.t : boundT
       const prefs = useSettings()
       const settingsError = useSettingsError()
-      const [status, setStatus] = React.useState(null)
-      // 两种错误分开：轮询失败说明服务不可用，动作失败说明这一次点击没成功。
-      // 混在一起会被下一次成功的轮询立刻抹掉，用户就只看到"点了没反应"。
-      const [pollError, setPollError] = React.useState(null)
-      const [actionError, setActionError] = React.useState(null)
-      const [tick, setTick] = React.useState(0)
-      const [busy, setBusy] = React.useState(false)
       const lastCheck = useCheckLog()
-      /** 点过按钮之后的一段时间内继续轮询：宿主的下载可能还在探测线路，状态没翻过来。 */
-      const settleRef = React.useRef(0)
-      const modelStatusKey = React.useRef('')
-
-      /**
-       * 自定义下载地址是输入框：按「失焦提交」处理。
-       * 每敲一个字就写一次 Host 既浪费又会让 profile 文件抖动，而且用户还在输入时
-       * 写到一半的地址本来也没意义；失焦/回车才提交，提交失败保留输入并给出提示。
-       */
-      const [customBaseDraft, setCustomBaseDraft] = React.useState(prefs.customBase)
-      const customBaseFocused = React.useRef(false)
-      const customBaseDraftRef = React.useRef(customBaseDraft)
-      customBaseDraftRef.current = customBaseDraft
-      React.useEffect(() => {
-        // 正在输入、或这个字段自己提交失败还没落盘时保留草稿
-        // （别的字段写成功不能解除这里的保护，否则失败会把用户填的地址抹掉）
-        const failed = settingsError !== null && settingsError.code === 'write-failed'
-          && settingsError.fields.includes('customBase')
-        if (shouldKeepDraft(customBaseDraftRef.current, prefs.customBase, {
-          focused: customBaseFocused.current,
-          failed,
-        })) return
-        setCustomBaseDraft(prefs.customBase)
-      }, [prefs.customBase, settingsError])
-      const commitCustomBase = React.useCallback(() => {
-        const value = customBaseDraftRef.current.trim()
-        if (value === configSettings.get().customBase) return
-        settingsStore.set({ customBase: value })
-      }, [])
-
-      React.useEffect(() => {
-        let alive = true
-        let timer = 0
-        const poll = async () => {
-          try {
-            const response = await fetch(MODEL_ENDPOINT + 'status', { cache: 'no-store' })
-            if (!response.ok) throw new Error('HTTP ' + response.status)
-            const next = await response.json()
-            if (!alive) return
-            setStatus(next)
-            setPollError(null)
-            const key = next.state + ':' + (next.state === 'ready' ? next.bytes : '')
-            if (modelStatusKey.current !== key) { modelStatusKey.current = key; modelsChanged() }
-            // 校验也要继续轮询，否则界面会停在"校验中"；动作刚发生后的几秒也要盯住，
-            // 因为宿主的下载可能还在探测线路，状态暂时还是 absent。
-            const active = next.state === 'downloading' || next.state === 'verifying'
-            if (active || Date.now() < settleRef.current) {
-              timer = window.setTimeout(poll, 400)
-            }
-          } catch (failure) {
-            if (alive) setPollError(failure instanceof Error ? failure.message : String(failure))
-          }
-        }
-        poll()
-        return () => { alive = false; window.clearTimeout(timer) }
-      }, [tick])
-
-      const act = React.useCallback(async (action) => {
-        setBusy(true)
-        setActionError(null)
-        settleRef.current = Date.now() + 5000
-        try {
-          let url = MODEL_ENDPOINT + action
-          if (action === 'download') {
-            url += '?source=' + encodeURIComponent(prefs.source)
-            if (prefs.source === 'custom') url += '&base=' + encodeURIComponent(customBaseDraftRef.current.trim())
-          }
-          const response = await fetch(url, { cache: 'no-store' })
-          if (!response.ok) {
-            // 宿主会把"地址无效"之类的具体原因放在 body 里；拿不到就报状态码，
-            // 绝不能什么都不显示——那样用户只看到"点了一下没反应"。
-            const body = await response.json().catch(() => null)
-            setActionError(body !== null && typeof body.error === 'string'
-              ? body.error
-              : 'HTTP ' + response.status)
-          }
-        } catch (failure) {
-          setActionError(failure instanceof Error ? failure.message : String(failure))
-        } finally {
-          setBusy(false)
-          setTick((n) => n + 1)
-        }
-      }, [prefs.source])
-
-      const customValid = isValidBase(customBaseDraft)
-      const canDownload = prefs.source !== 'custom' || customValid
-      const error = actionError ?? pollError
-      const state = status?.state ?? 'unknown'
-      const progress = status !== null && status.total > 0 ? Math.min(1, status.bytes / status.total) : 0
-
-      const statusText = {
-        absent: t('stateAbsent'),
-        downloading: format(t('stateDownloading'), { percent: Math.round(progress * 100) }),
-        verifying: t('stateVerifying'),
-        partial: t('statePartial'),
-        ready: t('stateReady'),
-        error: format(t('stateError'), { error: status?.error ?? '' }),
-        unknown: error === null ? t('stateChecking') : t('stateUnavailable'),
-      }[state] ?? state
-
       return React.createElement('div', {
-        'data-zh-typo-settings': '',
-        style: { display: 'flex', flexDirection: 'column', gap: '14px', padding: props.head === true ? '4px 2px' : '0', maxWidth: '620px' },
+        'data-zh-typo-settings': '', style: { display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '620px' },
       }, [
-        React.createElement('style', { key: 'anim' }, ANIMATION_CSS),
-        props.head === true
-          ? React.createElement('div', { key: 'head' }, [
-            React.createElement('div', {
-              key: 'title',
-              style: { fontSize: '15px', fontWeight: 600, color: 'var(--dsw-alias-label-primary)', marginBottom: '4px' },
-            }, t('title')),
-            React.createElement('div', {
-              key: 'desc',
-              style: { fontSize: '13px', lineHeight: '20px', color: 'var(--dsw-alias-label-secondary)' },
-            }, t('sectionIntro')),
-          ])
-          : null,
-
-        React.createElement(SemanticModelCard, { key: 'semantic-model', t, prefs }),
-        React.createElement('div', { key: 'last-check', title: lastCheck.detail || undefined,
-          style: { fontSize: '12px', color: 'var(--dsw-alias-label-secondary)' } },
-        lastCheck.at === 0 ? t('lastCheckIdle') : format(t('lastCheck'), {
-          typo: lastCheck.typo === 'Ready' ? String(lastCheck.issues) : t('sentence' + (lastCheck.typo || 'Unavailable')),
-          sentence: t('sentence' + (lastCheck.sentence || 'Unavailable')), ms: lastCheck.ms,
-        })),
-        React.createElement('div', {
-          key: 'options',
-          style: {
-            border: '1px solid var(--dsw-alias-border-l1)',
-            borderRadius: '10px',
-            padding: '6px 16px 10px',
-            display: 'flex',
-            flexDirection: 'column',
-            background: 'var(--dsw-alias-bg-layer-1)',
-          },
-        }, [
-          React.createElement('div', {
-            key: 'title',
-            style: { fontSize: '12px', fontWeight: 500, color: 'var(--dsw-alias-label-secondary)', padding: '8px 0 2px' },
-          }, t('options')),
-          prefRow('enabled', t('optEnabledLabel'), t('optEnabledHint'), toggleControl(t, prefs.enabled, () => {
-            settingsStore.set({ enabled: !prefs.enabled })
-          })),
-          prefRow('punct', t('optPunctLabel'), t('optPunctHint'), toggleControl(t, prefs.punctuation, () => {
-            settingsStore.set({ punctuation: !prefs.punctuation })
-          })),
-          prefRow('model', t('optModelLabel'), t('optModelHint'), toggleControl(t, prefs.model, () => {
-            settingsStore.set({ model: !prefs.model })
-          })),
-          prefRow('sens', t('optSensitivityLabel'), t('optSensitivityHint'),
-            React.createElement('div', { key: 'seg', style: { display: 'flex', gap: '4px' } },
-              ['low', 'normal', 'high'].map((level) => React.createElement('button', {
-                key: level,
-                type: 'button',
-                onClick: () => settingsStore.set({ sensitivity: level }),
-                style: segmentStyle(prefs.sensitivity === level),
-              }, t(level === 'low' ? 'sensLow' : level === 'high' ? 'sensHigh' : 'sensNormal'))))),
-          prefRow('source', t('optSourceLabel'), t('optSourceHint'),
-            React.createElement('div', { key: 'seg', style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
-              ['auto', 'mirror', 'official', 'custom'].map((level) => React.createElement('button', {
-                key: level,
-                type: 'button',
-                onClick: () => settingsStore.set({ source: level }),
-                style: segmentStyle(prefs.source === level),
-              }, t(level === 'auto' ? 'sourceAuto'
-                : level === 'mirror' ? 'sourceMirror'
-                  : level === 'official' ? 'sourceOfficial' : 'sourceCustom'))))),
-          prefs.source === 'custom'
-            ? React.createElement('div', {
-              key: 'custom-base',
-              style: { display: 'flex', flexDirection: 'column', gap: '4px', padding: '0 0 8px' },
-            }, [
-              React.createElement('input', {
-                key: 'input',
-                type: 'url',
-                spellCheck: false,
-                placeholder: t('customPlaceholder'),
-                value: customBaseDraft,
-                onChange: (event) => setCustomBaseDraft(event.target.value),
-                onFocus: () => { customBaseFocused.current = true },
-                onBlur: () => {
-                  customBaseFocused.current = false
-                  commitCustomBase()
-                },
-                onKeyDown: (event) => {
-                  if (event.key !== 'Enter') return
-                  event.preventDefault()
-                  commitCustomBase()
-                  event.currentTarget.blur()
-                },
-                style: {
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  fontFamily: 'inherit',
-                  fontSize: '12px',
-                  padding: '6px 10px',
-                  borderRadius: '7px',
-                  border: '1px solid ' + (customValid ? 'var(--dsw-alias-border-l2)' : 'var(--dsw-alias-state-error-primary)'),
-                  background: 'var(--dsw-alias-bg-base)',
-                  color: 'var(--dsw-alias-label-primary)',
-                },
-              }),
-              customValid
-                ? null
-                : React.createElement('span', {
-                  key: 'warn',
-                  style: { fontSize: '12px', color: 'var(--dsw-alias-state-error-primary)' },
-                }, t('customInvalid')),
-            ])
-            : null,
-          settingsError !== null
-            ? React.createElement('div', {
-              key: 'settings-error',
-              role: 'status',
-              style: {
-                fontSize: '12px',
-                lineHeight: '18px',
-                padding: '2px 0 8px',
-                color: 'var(--dsw-alias-state-error-primary)',
-              },
-            }, settingsError.code === 'namespace-unavailable'
-              ? t('settingsNamespaceUnavailable')
-              : format(t('settingsSaveFailed'), { error: settingsError.message }))
-            : null,
-        ]),
-
-        React.createElement('div', {
-          key: 'model',
-          style: {
-            border: '1px solid var(--dsw-alias-border-l1)',
-            borderRadius: '10px',
-            padding: '14px 16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-            background: 'var(--dsw-alias-bg-layer-1)',
-          },
-        }, [
-          React.createElement('div', {
-            key: 'row',
-            style: { display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' },
-          }, [
-            React.createElement('span', {
-              key: 'name',
-              style: { fontSize: '13px', fontWeight: 500, color: 'var(--dsw-alias-label-primary)' },
-            }, t('model')),
-            React.createElement('span', {
-              key: 'state',
-              style: {
-                fontSize: '12px',
-                color: state === 'ready'
-                  ? 'var(--dsw-alias-state-success-primary)'
-                  : state === 'error'
-                    ? 'var(--dsw-alias-state-error-primary)'
-                    : 'var(--dsw-alias-label-secondary)',
-              },
-            }, statusText),
-            status !== null && state === 'ready'
-              ? React.createElement('span', {
-                key: 'size',
-                style: { fontSize: '12px', color: 'var(--dsw-alias-label-secondary)' },
-              }, formatBytes(status.bytes))
-              : null,
-            React.createElement('div', { key: 'spacer', style: { flex: 1 } }),
-            state === 'downloading'
-              ? React.createElement('button', {
-                key: 'cancel',
-                type: 'button',
-                disabled: busy,
-                onClick: () => act('cancel'),
-                style: buttonStyle(false),
-              }, t('cancel'))
-              : null,
-            state === 'ready'
-              ? React.createElement('button', {
-                key: 'delete',
-                type: 'button',
-                disabled: busy,
-                onClick: () => act('delete'),
-                style: buttonStyle(false),
-              }, t('remove'))
-              : null,
-            state === 'absent' || state === 'error' || state === 'partial'
-              ? React.createElement('button', {
-                key: 'download',
-                type: 'button',
-                disabled: busy || !canDownload,
-                onClick: () => act('download'),
-                style: buttonStyle(true),
-              }, state === 'partial' ? t('resume') : state === 'error' ? t('reDownload') : t('download'))
-              : null,
-          ]),
-          state === 'downloading' || state === 'verifying'
-            ? React.createElement('div', {
-              key: 'bar',
-              style: {
-                height: '4px',
-                borderRadius: '2px',
-                background: 'var(--dsw-alias-border-l1)',
-                overflow: 'hidden',
-                position: 'relative',
-              },
-            }, React.createElement('div', {
-              style: state === 'verifying'
-                ? {
-                  // 校验阶段没有字节进度，用一条滑动的条表示"在动"
-                  width: '30%',
-                  height: '100%',
-                  background: 'var(--dsw-alias-brand-primary)',
-                  animation: 'zh-typo-indeterminate 1.1s ease-in-out infinite',
-                }
-                : {
-                  width: Math.round(progress * 100) + '%',
-                  height: '100%',
-                  background: 'var(--dsw-alias-brand-primary)',
-                  transition: 'width .2s linear',
-                },
-            }))
-            : null,
-          state === 'downloading' && status !== null && typeof status.file === 'string' && status.file !== ''
-            ? React.createElement('div', {
-              key: 'file',
-              style: { fontSize: '12px', color: 'var(--dsw-alias-label-secondary)' },
-            }, format(t('downloadingFile'), {
-              file: status.file,
-              index: (status.fileIndex ?? 0) + 1,
-              count: status.fileCount ?? 1,
-              percent: Math.round(progress * 100),
-            }))
-            : null,
-          state === 'partial' && status !== null
-            ? React.createElement('div', {
-              key: 'partial',
-              style: { fontSize: '12px', color: 'var(--dsw-alias-label-secondary)' },
-            }, format(t('partialDetail'), { size: formatBytes(status.bytes) }))
-            : null,
-          React.createElement('div', {
-            key: 'note',
-            style: { fontSize: '12px', lineHeight: '18px', color: 'var(--dsw-alias-label-secondary)' },
-          }, state === 'ready' ? t('noteReady') : t('noteAbsent')),
-          status !== null && status.runtime === false
-            ? React.createElement('div', {
-              key: 'runtime',
-              style: { fontSize: '12px', lineHeight: '18px', color: 'var(--dsw-alias-state-warn-primary)' },
-            }, t('runtimeMissing'))
-            : null,
-          actionError !== null
-            ? React.createElement('div', {
-              key: 'action-error',
-              style: { fontSize: '12px', lineHeight: '18px', color: 'var(--dsw-alias-state-error-primary)' },
-            }, format(t('actionFailed'), { error: actionError }))
-            : null,
-          pollError !== null
-            ? React.createElement('div', {
-              key: 'err',
-              style: { fontSize: '12px', lineHeight: '18px', color: 'var(--dsw-alias-state-error-primary)' },
-            }, format(t('hostUnavailable'), { error: pollError }))
-            : null,
-        ]),
+        React.createElement('style', { key: 'style' }, SETTINGS_CSS),
+        props.head === true ? React.createElement('div', { key: 'title', className: 'zh-check-label', style: { fontSize: '15px', fontWeight: 600 } }, t('title')) : null,
+        prefRow('enabled', t('optEnabledLabel'), null, toggleControl(t, prefs.enabled,
+          () => settingsStore.set({ enabled: !prefs.enabled }), t('optEnabledLabel'))),
+        React.createElement(ModelCard, { key: 'sentence', t, prefs, sentence: true }),
+        prefRow('punctuation', t('optPunctLabel'), null, toggleControl(t, prefs.punctuation,
+          () => settingsStore.set({ punctuation: !prefs.punctuation }), t('optPunctLabel'))),
+        React.createElement(ModelCard, { key: 'typo', t, prefs, sentence: false }),
+        React.createElement(SettingsSaveNotice, { key: 'save-notice', error: settingsError, t }),
+        settingsError?.code === 'namespace-unavailable' ? React.createElement('div', { key: 'error', role: 'status', className: 'zh-check-error' },
+          t('settingsNamespaceUnavailable')) : null,
+        lastCheck.at > 0 ? React.createElement('div', { key: 'last-check', className: 'zh-check-muted', title: lastCheck.detail || undefined },
+          format(t('lastCheck'), { typo: lastCheck.typo === 'Ready' ? String(lastCheck.issues) : t('sentence' + (lastCheck.typo || 'Unavailable')),
+            sentence: t('sentence' + (lastCheck.sentence || 'Unavailable')), ms: lastCheck.ms })) : null,
       ])
     }
+
 
     /**
      * 注册期要用的翻译函数：`bind` 返回稳定引用，但调用时才读当前语言，
