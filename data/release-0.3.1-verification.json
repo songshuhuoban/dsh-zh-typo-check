@@ -1,0 +1,126 @@
+{
+  "issue": "SIM-1053",
+  "recorded_at_utc": "2026-11-10T10:41:36.439939+00:00",
+  "status": "released-and-actual-desktop-upgraded-engineering-verified-product-review-pending",
+  "pr": {
+    "number": 3,
+    "url": "https://github.com/songshuhuoban/dsh-zh-typo-check/pull/3",
+    "merge_commit": "1f3fc0630be92eeefff4e9240798319739a71fcb",
+    "merged_at_utc": "2026-11-10T10:20:14Z"
+  },
+  "source_commit": "8716cfd23f9dcd4b0846b5b683ab2f48d118765a",
+  "tag": "v0.3.1",
+  "npm": {
+    "at_utc": "2026-11-10T10:26:28.817311+00:00",
+    "version": "0.3.1",
+    "dist_tags": {
+      "next": "0.3.0",
+      "latest": "0.3.1"
+    },
+    "git_head": "8716cfd23f9dcd4b0846b5b683ab2f48d118765a",
+    "sha256": "e55f5a84f3c57fd85752699667bbecbc433992c5487344a839220368f5e0cfa6",
+    "sha1": "141c0624dc1f536a7fd360933b2b1b09de08c259",
+    "integrity": "sha512-+9g4b0HtAqBBa1BaAgP22JX3RXi6G8DeIP5Fk7XSN19DDtQiGgWcFpdkdNsluQ6bJYDAKIc+ILNB2eEf3QJNTw==",
+    "bytes": 1233038,
+    "files": 28,
+    "exact_preflight_payload": true,
+    "official_tarball": "https://registry.npmjs.org/dsh-zh-typo-check/-/dsh-zh-typo-check-0.3.1.tgz"
+  },
+  "github_release": {
+    "url": "https://github.com/songshuhuoban/dsh-zh-typo-check/releases/tag/v0.3.1",
+    "draft": false,
+    "prerelease": false,
+    "assets": [
+      "dsh-zh-typo-check-0.3.1.tgz",
+      "repair-upgrade.ps1",
+      "upgrade-recovery.md"
+    ]
+  },
+  "cold_registry_install": {
+    "version": "0.3.1",
+    "at_utc": "2026-11-10T10:27:43.481745+00:00",
+    "origin": "http://127.0.0.1:65055",
+    "installed_registry_files_match": 28,
+    "probes": [
+      {
+        "warning": true,
+        "score": 13.770684242248535,
+        "seconds": 0.9279390999581665
+      },
+      {
+        "warning": false,
+        "score": -9.164060592651367,
+        "seconds": 0.011790900025516748
+      },
+      {
+        "warning": false,
+        "score": -21.913278579711914,
+        "seconds": 0.012357900035567582
+      }
+    ],
+    "legacy_typo_preserved": true,
+    "range_streaming": true
+  },
+  "actual_desktop_upgrade": {
+    "at_utc": "2026-11-10T10:31:49.4856354Z",
+    "from_version": "0.3.0",
+    "to_version": "0.3.1",
+    "method": "User saved drafts and fully exited DSH; official bundled CLI exact-version install and bundle selection restore",
+    "old_hot_update_stalled_at": "remove 0.3.0, 2026-11-10T10:27:46.926Z",
+    "enabled": true,
+    "backup_receipt_saved": true,
+    "settings_unchanged": true,
+    "model_files_preserved": 3,
+    "installed_registry_files_match": 28
+  },
+  "actual_desktop": {
+    "at_utc": "2026-11-10T10:37:52.446322+00:00",
+    "origin": "http://127.0.0.1:52094",
+    "actual_desktop": true,
+    "version": "0.3.1",
+    "enabled": true,
+    "native_runtime": "1.30.0",
+    "settings_unchanged": true,
+    "model_files_preserved": 3,
+    "models_unchanged": true,
+    "legacy_typo_suggestion_preserved": true,
+    "probes": [
+      {
+        "name": "original",
+        "warning": true,
+        "score": 13.770684242248535
+      },
+      {
+        "name": "mixed-normal",
+        "warning": false,
+        "score": -9.164060592651367
+      },
+      {
+        "name": "english-normal",
+        "warning": false,
+        "score": -21.913278579711914
+      }
+    ],
+    "no_chat_messages_sent": true
+  },
+  "native_ui": {
+    "version": "0.3.1",
+    "component_running": true,
+    "latest": true,
+    "semantic_ready": true,
+    "legacy_model_ready": true
+  },
+  "native_runtime_isolation": {
+    "verified": true,
+    "host_profile_native_modules": [],
+    "worker_native_modules": [
+      "onnxruntime_binding.node",
+      "onnxruntime.dll"
+    ]
+  },
+  "first_upgrade_requires_exit": true,
+  "upstream_app_asar_modified": false,
+  "upstream_generic_update_failure_ui_fixed": false,
+  "no_chat_messages_sent": true,
+  "private_evidence": ".research/release-031/live-upgrade.log, live-desktop.png, live-runtime-isolation.json"
+}
