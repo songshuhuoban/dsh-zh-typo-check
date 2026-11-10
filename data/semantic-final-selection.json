@@ -1,0 +1,55 @@
+{
+  "selected_at_utc": "2026-11-10T07:18:32.015218+00:00",
+  "issue": "SIM-1050",
+  "status": "user-approved-selection-pending-plugin-integration",
+  "default_engine": "r13-local",
+  "model_package": ".research/semantic-round13/package",
+  "model": "model-int8.onnx",
+  "model_sha256": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+  "package_sha256": {
+    "bases.json": "d1cd10fbc259f305a9a6abd901a81abd7266330b6e9ed74c207f37f6a8ef8615",
+    "files.sha256.json": "223fedfc013da7fcfd3e3418a73259ae5f04231949fbbb139aae96cf5fb98878",
+    "metadata.json": "68c89297b78696a348e39e4b8c7d1e4752175f320931b9d0a88fa5961c022b9d",
+    "model-int8.onnx": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+    "README.txt": "9ef44ff2932d43f47332d1a0c67971c6fd0265f1f195a9a92a22e543c2e558e1",
+    "selection.json": "bd1c07f2dc4488403d9780fae975e6025718884eea3ee010a79a6b7d6a6a7cd4",
+    "en/config.json": "9708dadc5705ed0b5b8f6a63e723e959fe52b18aceedd9e704d8058739d3747b",
+    "en/tokenizer_config.json": "a025160ef0431f1a392f6f050c1310f4c5d9fb6f275932dbccba73c4d214bf10",
+    "en/vocab.txt": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3",
+    "zh/config.json": "baca81bc1b187003480015d15215c1a37c306bdf10faf00f53ac99c4de437562",
+    "zh/special_tokens_map.json": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3",
+    "zh/tokenizer_config.json": "61785aeaba176fba6d6489f27dccfd2ddee6aee2af0e590451cab7d8b57e0874",
+    "zh/vocab.txt": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c"
+  },
+  "package_bytes": 27438245,
+  "native_runtime": {
+    "package": "onnxruntime-node",
+    "version": "1.30.0",
+    "backend": "cpu",
+    "threads": 4,
+    "inter_op_threads": 1
+  },
+  "thresholds": {
+    "en": 3.8071134090423584,
+    "zh": 5.315961837768555,
+    "mixed": 3.1870408058166504
+  },
+  "decision": "whole-input binary margin > language threshold; otherwise no semantic warning",
+  "context_limit": "At most128 tokens per each of the two encoders; report longer input as unavailable rather than classify a truncated prefix.",
+  "language_handling": "zh/en/mixed all use the whole-input dual-encoder model; do not skip semantic checking just because ASCII occurs.",
+  "product_composition": "Existing local typo checker plus R13 whole-input anomaly warning; anomaly judgment does not propose a generated rewrite.",
+  "cloud_default_enabled": false,
+  "whole_sentence_auto_replace": false,
+  "failure_policy": "A failed semantic inference is unavailable, not a normal/correct answer.",
+  "reason": "Prioritize the original random-IME problem, local latency and no routine cloud-input export: R13 detects46/57 real-IME anomalies vs Jev CAL-cost35/57. R13 overall89/104 vs Jev78/104, at the cost of more warnings: normal4/301 vs2/301 and context14/270 vs7/270. Jev is not dominated on false positives.",
+  "combination_tradeoff": "Prespecified primary R13 OR Jev gives91/104 with same4/301 normalFP and14/270 context warnings, but needs568/675 remote calls. Secondary0.7/0.66 OR gives95/104 but context warnings19/20 of270. Added cloud latency/dependency is not chosen as the default for these known-regression gains.",
+  "evidence": [
+    "REPORT-SEMANTIC-JEV.md",
+    "data/semantic-jev-results.json",
+    "data/semantic-qwen35-comparison.json"
+  ],
+  "limitations": "Known regression, assistant labels, no new human-gold blind test; scheme selection is not a claim of plugin deployment or population accuracy.",
+  "user_approved_on": "2026-11-10",
+  "user_approved_at_utc": "2026-11-10T07:30:06.262979+00:00",
+  "approval_scope": "Final model and behavior selection accepted; plugin integration, deployment and deployed product acceptance have not occurred."
+}

@@ -86,6 +86,7 @@ expect('configSummary 读 Ref', [fromRefs.enabled, fromRefs.sensitivity, fromRef
 
 const plain = {}
 for (const field of SETTINGS_FIELDS) plain[field] = DEFAULT_SETTINGS[field]
+plain.fluency = false // 旧用户显式关闭的设置必须保持 false。
 const fromPlain = JSON.parse(plugin.configSummary(plain))
 // customBase 不进启动痕迹（可能是内网地址），这里只钉住属性读取方式
 expect('configSummary 兼容普通值（旧 schemastery）', [fromPlain.fluency, fromPlain.enabled], [false, true])

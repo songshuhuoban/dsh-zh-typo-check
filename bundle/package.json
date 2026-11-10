@@ -1,7 +1,7 @@
 {
   "name": "dsh-zh-typo-check",
-  "version": "0.2.3",
-  "description": "中文错别字与半角标点检查，用于 DSH 输入框。规则即时生效，语义错由可下载的本地模型补上。",
+  "version": "0.3.0",
+  "description": "DSH 本地中文错字、标点与中英文混排整句异常检查。",
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -37,11 +37,17 @@
     "lexicon.mjs",
     "l1.mjs",
     "checker.mjs",
+    "semantic-tokenizer.mjs",
+    "semantic.mjs",
+    "semantic-service.mjs",
     "data/*.txt",
     "cordis.patch.yml",
     "locale/*.json",
     "icon.svg",
     "LICENSE",
+    "LICENSE-APACHE-2.0",
+    "NOTICE",
+    "MODEL-R13.md",
     "README.md"
   ],
   "dependencies": {

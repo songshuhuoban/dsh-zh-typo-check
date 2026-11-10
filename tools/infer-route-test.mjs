@@ -8,12 +8,16 @@
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
+import { semanticTestModel } from './semantic-test-model.mjs'
+import { SEMANTIC_MODEL } from '../src/semantic.mjs'
 
 const root = path.resolve(import.meta.dirname, '..')
 const tmp = path.join(root, '.tmp-infer-test')
 const models = path.join(tmp, 'models', 'zh-typo-check')
 const cache = path.join(root, 'node_modules/@huggingface/transformers/.cache/Xenova/macbert4csc-base-chinese')
 
+if (!path.resolve(tmp).startsWith(root + path.sep + '.tmp-')) throw new Error('Unsafe test workspace')
+await fsp.rm(tmp, { recursive: true, force: true })
 await fsp.mkdir(models, { recursive: true })
 fs.linkSync(path.join(cache, 'tokenizer.json'), path.join(models, 'tokenizer.json'))
 fs.linkSync(path.join(cache, 'onnx', 'model_quantized.onnx'), path.join(models, 'model_quantized.onnx'))
@@ -131,13 +135,16 @@ check('并发结果与单次一致',
   JSON.stringify(burst.map((r) => r.body.issues.length)))
 check('并发请求被合并（不到串行的两倍）', concMs < singleMs * 2, `${concMs} vs ${singleMs}`)
 
-// 通顺度：复用逐字打分，正常句显著高于乱敲句
+// R13 独立整句模型；旧掩码平均分不再作为语义判断。
+const semanticDir = path.join(models, 'semantic-r13')
+await fsp.mkdir(semanticDir, { recursive: true })
+await fsp.copyFile(await semanticTestModel(), path.join(semanticDir, SEMANTIC_MODEL.file))
 const fluencyOf = async (text) => {
   const r = await call('check?text=' + encodeURIComponent(text) + '&delta=12')
   return r.body.fluency
 }
 const normal = await fluencyOf('今天的天气不错，我们去公园走走吧。')
-const garbled = await fluencyOf('第五个i红啊数据库更好')
+const garbled = await fluencyOf('女哦就是的感受a到啊删掉asd苏打粉二十个s收到')
 // 中英混排：英文词会让 token 数 ≠ 字符数；之前整句被判 not-aligned 直接跳过，
 // 用户看到的就是「开了模型/通顺度也完全没反应」。
 const mixed = await call('check?text=' + encodeURIComponent('我到上海住的还，可以用API测试') + '&delta=12')
@@ -148,18 +155,13 @@ const mixedTypo = await call('check?text=' + encodeURIComponent('这个方案的
 check('中英混排仍能抓到「显」→「险」',
   mixedTypo.body.issues.some((i) => i.original === '显' && i.candidate === '险'),
   JSON.stringify(mixedTypo.body.issues))
-// 通顺度对混排句不下结论：模型在 code-switch 上打分不可靠（18 句正确混排 5 句误报），
-// 因此宿主直接返回 null，避免截图里那种「开了通顺度却满屏蓝线」。
-const mixedGarbled = await fluencyOf('你公司大佛IG你哦as士大夫回家英特人阿斯顿')
-check('中英混排不下通顺度结论（避免误报）', mixedGarbled === null, JSON.stringify(mixedGarbled))
+const mixedGarbled = await fluencyOf('女哦就是的感受a到啊删掉asd苏打粉二十个s收到')
+check('原始混排乱码由整句模型检出', mixedGarbled?.low === true && mixedGarbled?.language === 'mixed', JSON.stringify(mixedGarbled))
 const mixedClean = await call('check?text=' + encodeURIComponent('这个 API 的 timeout 设置需要调整一下。') + '&delta=12')
-check('正确的中英混排不误报',
-  mixedClean.body.aligned === true && mixedClean.body.issues.length === 0 && mixedClean.body.fluency === null,
-  JSON.stringify({ aligned: mixedClean.body.aligned, issues: mixedClean.body.issues, fluency: mixedClean.body.fluency }))
-console.log(`  正常 ${normal?.avg}，乱敲 ${garbled?.avg}（阈值 ${normal?.threshold}）；混排句不判通顺度`)
-check('正常句不被判为不通顺', normal !== null && normal.low === false, String(normal?.avg))
-check('乱敲句被判为不通顺', garbled !== null && garbled.low === true, String(garbled?.avg))
-check('通顺度来自已有打分（有采样数）', normal !== null && normal.samples > 0, String(normal?.samples))
+check('正确混排无错字或整句误报', mixedClean.body.aligned === true && mixedClean.body.issues.length === 0 && mixedClean.body.fluency?.low === false, JSON.stringify(mixedClean.body))
+check('正常句无整句误报', normal?.low === false, JSON.stringify(normal))
+check('原始问题句被检出', garbled?.low === true, JSON.stringify(garbled))
+check('语义结果来自固定 R13 而非掩码平均分', normal?.engine === 'r13' && Number.isFinite(normal?.score), JSON.stringify(normal))
 await fsp.rm(tmp, { recursive: true, force: true })
 console.log(`\n${failed.length === 0 ? '全部通过' : `${failed.length} 项失败：${failed.join('、')}`}`)
 process.exit(failed.length === 0 ? 0 : 1)

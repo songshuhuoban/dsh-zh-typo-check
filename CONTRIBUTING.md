@@ -51,6 +51,7 @@ node tools/model-service-test.mjs      # 下载 / 校验 / 分发 / 删除
 node tools/tokenizer-test.mjs          # 分词器与 transformers.js 逐 token 对齐
 node tools/infer-test.mjs              # 推理正确性
 node tools/infer-route-test.mjs        # 检查路由端到端
+node tools/semantic-product-test.mjs   # R13：真实模型下载/损坏/取消/删除/独立路由
 node tools/plugin-resilience-test.mjs  # 推理链损坏时的降级
 node tools/host-eval.mjs all           # 产品路径的精确率 / 召回率
 ```
@@ -83,6 +84,12 @@ node tools/host-eval.mjs all           # 产品路径的精确率 / 召回率
 猜得比原字强得多（Δ 够大），且替换后"像话"（和邻字成词或在近音集合内），才报。
 
 ## 配置持久化
+
+R13 整句检查（0.3.0）由 `src/semantic-tokenizer.mjs`、`semantic.mjs`、`semantic-service.mjs` 负责双分词器、固定 Native ORT 1.30.0 推理与 profile 内模型生命周期。构建复制两个不变词表；27 MB 权重通过 GitHub Release 分发，SHA-256 固定在源码中。不可直接替换模型、运行时或阈值，三者必须一起验证。
+
+`/zh-typo-model/check` 的 `typo=0|1` 与 `sentence=0|1` 独立控制两种模型。整句无效结果为 `semantic.warning: null`，有效结果为布尔值。超过任一编码器 128 token 不截断。原 MLM 的平均分不再用于整句判断。两种模型安装与删除分别使客户端缓存失效，当前草稿会重查。
+
+运行 `npm run semantic:test`。本机模型优先从 `SEMANTIC_TEST_MODEL`、`.model-cache` 或研究缓存读取，缺失时从固定公开 Release 下载并校验。测试临时 profile 与真实用户 profile 隔离。模型来源与选择限制见 [MODEL-R13.md](MODEL-R13.md)。
 
 **别再往 localStorage 里存配置。** DSH Desktop 每次启动都用 `--port 0` 起本地 Web
 服务（Electron 侧只从运行时拿端口），页面 origin 每次都不一样；localStorage 按

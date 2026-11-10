@@ -1,0 +1,27 @@
+{
+  "approved_on": "2026-11-10",
+  "timezone": "Asia/Shanghai",
+  "approved_at_utc": "2026-11-10T07:30:06.262979+00:00",
+  "source": "User: 好，那就按照最终的方案定下来",
+  "issue": "SIM-1050",
+  "scope": "Final model and behavior selection accepted; plugin integration, deployment and deployed product acceptance have not occurred.",
+  "selected_at_utc": "2026-11-10T07:18:32.015218+00:00",
+  "default_engine": "r13-local",
+  "model_sha256": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+  "thresholds": {
+    "en": 3.8071134090423584,
+    "zh": 5.315961837768555,
+    "mixed": 3.1870408058166504
+  },
+  "native_runtime": {
+    "package": "onnxruntime-node",
+    "version": "1.30.0",
+    "backend": "cpu",
+    "threads": 4,
+    "inter_op_threads": 1
+  },
+  "cloud_default_enabled": false,
+  "whole_sentence_auto_replace": false,
+  "pre_approval_selection_sha256": "2d2e1ce5eefad769cf27aa557e9ac8c3462e2aa8cef06ee01d6282d31f0cb8ad",
+  "pre_approval_report_sha256": "3ef18821b0e5ceb4e1273f8ec6357d8e88a5ee3d3f9821a602cde52055ca1d7f"
+}
