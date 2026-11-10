@@ -27,13 +27,16 @@ function live(schema) {
 export const Config = z.object({
   enabled: live(z.boolean().default(true).description('Underline Chinese typos in the composer.')),
   punctuation: live(z.boolean().default(true).description('Also flag half-width ASCII punctuation.')),
-  model: live(z.boolean().default(true).description('Use the local model for semantic checks when installed.')),
+  model: live(z.boolean().default(true).description('Suggest Chinese character corrections with the optional local typo model.')),
   fluency: live(z.boolean().default(true).description('Use the local whole-input Chinese, English and mixed-language semantic checker.')),
   sensitivity: live(z.union([z.const('low'), z.const('normal'), z.const('high')]).default('normal')
     .description('Model sensitivity: conservative, normal, or aggressive.')),
   source: live(z.union([z.const('auto'), z.const('mirror'), z.const('official'), z.const('custom')]).default('auto')
-    .description('Preferred model download source.')),
-  customBase: live(z.string().default('').description('Custom download base URL (http/https).')),
+    .description('Preferred typo model download source.')),
+  customBase: live(z.string().default('').description('Custom typo model download base URL (http/https).')),
+  sentenceSource: live(z.union([z.const('official'), z.const('custom')]).default('official')
+    .description('Preferred whole-sentence model download source.')),
+  sentenceCustomBase: live(z.string().default('').description('Custom whole-sentence model download base URL (http/https).')),
 })
 
 export const inject = ['webServer']
@@ -51,7 +54,7 @@ const PACKAGE_NAME = 'dsh-zh-typo-check'
 
 /** volatile 配置以 Ref 形式传进 apply；这里只取一份可读快照写进启动痕迹。（导出供单测） */
 export function configSummary(refs) {
-  const fields = ['enabled', 'punctuation', 'model', 'fluency', 'sensitivity', 'source']
+  const fields = ['enabled', 'punctuation', 'model', 'fluency', 'sensitivity', 'source', 'sentenceSource']
   const value = {}
   for (const field of fields) {
     const ref = refs?.[field]

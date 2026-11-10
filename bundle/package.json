@@ -1,6 +1,6 @@
 {
   "name": "dsh-zh-typo-check",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "DSH 本地中文错字、标点与中英文混排整句异常检查。",
   "keywords": [
     "dsh",

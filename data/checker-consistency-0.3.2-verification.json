@@ -1,0 +1,134 @@
+{
+  "version": "0.3.2-rc.1",
+  "source_commit": "bc6b7c56d7a63d8aad354a3ad7b5ffc2c69cbe0f",
+  "staging": {
+    "origin": "http://127.0.0.1:53703",
+    "started_at_utc": "2026-11-10T11:31:22.2490034Z",
+    "isolated_profile": true,
+    "user_desktop_changed": false
+  },
+  "artifact": {
+    "sha256": "c19ff586446687995ebcc96fd96bf0458a7a51260dbba7e506430a75ecbb2028",
+    "bytes": 1232531,
+    "files": 28,
+    "installed_client_and_host_match": true
+  },
+  "models": {
+    "hashes_unchanged": true,
+    "sha256": {
+      "models\\zh-typo-check\\tokenizer.json": "7dfbf1966ebf99d471c3796e9b457329d2b2182b817e144f1e904b957745c839",
+      "models\\zh-typo-check\\model_quantized.onnx": "0c40a55ed4cae6df2fb32c666fb21c75bcea3543cd2dac653e0b4aff22e1e8c7",
+      "models\\zh-typo-check\\semantic-r13\\semantic-r13-int8.onnx": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda"
+    },
+    "status": {
+      "status": {
+        "state": "ready",
+        "bytes": 104035535,
+        "runtime": true
+      },
+      "semantic/status": {
+        "state": "ready",
+        "bytes": 27092583,
+        "runtime": true
+      }
+    }
+  },
+  "cases": [
+    {
+      "text": "这个方案有点危显是的管理开始地灵龛你看了",
+      "sentence_warning": true,
+      "sentence_score": 10.493962287902832,
+      "raw_mlm_candidates": [
+        {
+          "original": "危",
+          "candidate": "凸"
+        },
+        {
+          "original": "显",
+          "candidate": "险"
+        }
+      ]
+    },
+    {
+      "text": "这个方案有点危显是的管理开始地灵你看了",
+      "sentence_warning": true,
+      "sentence_score": 10.927153587341309,
+      "raw_mlm_candidates": [
+        {
+          "original": "危",
+          "candidate": "凸"
+        },
+        {
+          "original": "显",
+          "candidate": "险"
+        }
+      ]
+    },
+    {
+      "text": "这个方案有点危显，需要再评估风险。",
+      "sentence_warning": false,
+      "sentence_score": -8.601860046386719,
+      "raw_mlm_candidates": [
+        {
+          "original": "显",
+          "candidate": "险"
+        }
+      ]
+    },
+    {
+      "text": "这个方案有点危险，我们需要再讨论一下。",
+      "sentence_warning": false,
+      "sentence_score": -15.490423202514648,
+      "raw_mlm_candidates": []
+    }
+  ],
+  "ui": {
+    "original_sentence_blue_marks": 1,
+    "original_sentence_model_marks": 0,
+    "coherent_typo_replaced": "这个方案有点危险，需要再评估风险。",
+    "multiline_and_punctuation_coexist": true,
+    "specific_bubble_priority": true,
+    "sources_persist_after_reload_and_restart": true,
+    "checked_viewports": [
+      360,
+      480,
+      1280
+    ],
+    "narrow": {
+      "fields": [
+        {
+          "columns": "289.6px",
+          "scroll": 290,
+          "width": 290
+        },
+        {
+          "columns": "289.6px",
+          "scroll": 290,
+          "width": 290
+        },
+        {
+          "columns": "289.6px",
+          "scroll": 290,
+          "width": 290
+        }
+      ],
+      "overflowingControls": 0,
+      "scroll": 315,
+      "viewport": 360,
+      "width": 315
+    }
+  },
+  "checks": {
+    "npm_test": "passed",
+    "oxlint_correctness": "passed (existing unused catch variables excluded)",
+    "git_diff_check": "passed",
+    "http11_download_and_hash_verification": "passed"
+  },
+  "known_limitation": {
+    "runtime": "DSH bundled Node 24.21.0",
+    "http10_download": "undici Parser.finish assert(!this.paused), worker exit 1",
+    "transport_fixed": false,
+    "status_recovery_covered": true
+  },
+  "npm_published": false
+}
