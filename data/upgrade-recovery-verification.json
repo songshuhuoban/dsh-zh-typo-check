@@ -1,0 +1,74 @@
+{
+  "recorded_at_utc": "2026-11-10T09:23:27.693487+00:00",
+  "issue": "SIM-1052",
+  "status": "recovered-and-engineering-verified-product-review-pending",
+  "harness_version": "0.2.2-rc.1",
+  "from_plugin": "0.2.3",
+  "to_plugin": "0.3.0",
+  "method": "official DSH CLI offline upgrade, backup and atomic bundle enable",
+  "recovery_script": "tools/repair-upgrade.ps1",
+  "script_sha256": "98f69d936d617e5a5c8dc73fae6d9728dc3769936aa36c894e976723c0aebd2d",
+  "upstream_hot_update_fixed": false,
+  "exact_original_wait_point_proven": false,
+  "checks": {
+    "active_desktop_guard": true,
+    "powershell7_recovery": true,
+    "powershell51_recovery": true,
+    "independent_recovered_host_boot": true,
+    "actual_desktop_recovered": true,
+    "actual_native_ui_version_and_ready": true,
+    "original_preference_patch_unchanged": true,
+    "existing_model_files_preserved": 2
+  },
+  "actual_desktop": {
+    "at_utc": "2026-11-10T09:19:59.357439+00:00",
+    "origin": "http://127.0.0.1:51587",
+    "actual_desktop": true,
+    "version": "0.3.0",
+    "enabled": true,
+    "settings_unchanged": true,
+    "native_runtime": "1.30.0",
+    "new_model_bytes": 27092583,
+    "new_model_sha256": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+    "legacy_typo_suggestion_preserved": true,
+    "probes": [
+      {
+        "name": "original",
+        "warning": true,
+        "score": 13.770684242248535,
+        "typo_issues": 0
+      },
+      {
+        "name": "mixed-normal",
+        "warning": false,
+        "score": -9.164060592651367,
+        "typo_issues": 0
+      },
+      {
+        "name": "english-normal",
+        "warning": false,
+        "score": -21.913278579711914,
+        "typo_issues": 0
+      }
+    ]
+  },
+  "independent_profile": {
+    "at_utc": "2026-11-10T09:05:42.001393+00:00",
+    "origin": "http://127.0.0.1:57423",
+    "fixture_starts_and_registers_route": true,
+    "version": "0.3.0",
+    "warning": true,
+    "engine": "r13",
+    "score": 13.770684242248535,
+    "settings_preserved": true,
+    "model_sha256": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+    "unrelated_metadata_preserved": true,
+    "bundle_selected_once": true
+  },
+  "artifact_provenance": "PR2 merged at7f724b191942c7f830ca23587e9b43f21fb1a3af; runtime package remains npm0.3.0",
+  "evidence_files": [
+    "docs/升级卡死恢复.md",
+    "docs/DSH-更新器卡死-报障.md"
+  ],
+  "private_evidence": ".research/updater/live-recovery.log, live-smoke.json, live-recovered-desktop.png"
+}

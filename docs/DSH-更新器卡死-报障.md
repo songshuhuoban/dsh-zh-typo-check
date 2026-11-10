@@ -124,3 +124,9 @@ Already up to date
 脚本在真实桌面进程仍运行时拒绝执行；测试前后核对真实 desktop manifest 字节相同。本节仅证明离线恢复路径，未修改已安装的 app.asar，也未声称已经修好 DSH 的热更新实现。真实 desktop 的恢复与验收另在对应 issue 记录。
 
 Windows PowerShell 5.1 与 PowerShell 7 均实际执行恢复通过；已覆盖重复安装已有0.3.0但未启用的恢复分支。脚本可先用 `-PlanOnly` 预览。
+
+### 真实 desktop 已恢复
+
+用户保存草稿并完全退出后，于 `2026-11-10T09:12:53Z` 完成实际 profile 恢复：官方 CLI 将0.2.3升级0.3.0，启用记录恢复，检查偏好文件与已有两份模型哈希一致。正常启动原桌面应用后，原生 UI 确认组件运行中、当前版本0.3.0、已是最新版本；选定的27MB整句模型已下载、SHA-256匹配冻结值并显示就绪。
+
+`2026-11-10T09:19:59Z` 在实际桌面的检查接口复验：原句R13提示为true，正常gRPC混排及英文对照为false，旧错字模型仍提示“还→话”。真实检查偏好文件仍与恢复前逐字节相同。可机读结果在 `data/upgrade-recovery-verification.json`，本地界面证据在 `.research/updater/live-recovered-desktop.png`；未发送聊天消息。
