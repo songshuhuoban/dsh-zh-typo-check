@@ -52,8 +52,9 @@ Lockfile is up to date, resolution step is skipped
 Already up to date
 ```
 
-即移除流程里的一次 `pnpm install` 已经正常返回，之后没有任何后续动作（也没有 `pnpm remove` 的输出），
-说明卡点发生在 pnpm 之后的宿主流程里，而不是网络/安装失败。
+移除流程里的一次 `pnpm install` 输出到这里，之后没有新的输出，也没有 `pnpm remove` 的记录。
+**校正（2026-11-10）：这些文字不能证明 pnpm 进程已经退出**，日志没有进程退出标记。
+现阶段证据把问题限定在宿主移除/HMR 与包重组路径，具体等待在哪一个 await 仍需进程/阶段跟踪，不能只凭此日志排除子进程问题。
 
 ### 3. 对照实验：不经过更新器的卸载/加载完全正常
 
@@ -104,3 +105,18 @@ Already up to date
 - 更新操作应有超时与明确失败上报（至少把 started 补成 settled/unknown）。
 - 失败/中断时应把 manifest 与 node_modules 回滚到更新前状态（或提示如何恢复）。
 - 建议检查 `removeBundle` 在「插件运行中」被更新路径调用时的锁/事务顺序。
+
+## 2026-11-10：0.2.3 升 0.3.0 现场与恢复验证
+
+真实 desktop profile 再次出现：依赖声明仍为 `0.2.3`，bundle 选择中已无该插件，安装目录缺失。操作日志本次为：
+
+| UTC 时间 | 阶段 | 结果 |
+| --- | --- | --- |
+| 2026-11-10 08:49:14.140 | remove 0.2.3 started | 界面停在“停止并移除” |
+| 2026-11-10 08:59:16.731 | remove 0.2.3 settled | failed、changed=true、errorCode=operation-error |
+
+本次最终约十分钟后返回失败，因此不能称此现场永久没有 settled。失败后上述半截状态仍在；新插件尚未安装。提取安装中的实际 Host 模块确认版本为 `0.2.2-rc.1`，不使用旧 SDK 副本代替现场版本。该定位尚不足以断言某个具体锁死循环已经证实。
+
+新增 [tools/repair-upgrade.ps1](../tools/repair-upgrade.ps1) 与[恢复步骤](升级卡死恢复.md)。在全新的无账号 profile 模拟同样半截状态，使用官方 CLI 从 npm 安装精确 `0.3.0`，补回启用记录；原有偏好文件和 27,092,583 字节的真实 R13 模型 SHA-256 不变，无关 manifest 字段保留，启用条目只出现一次。恢复后的真实 DSH Host 启动并注册检查路由成功，原问题句得到 R13 warning=true、margin=13.770684242248535。验证时间 `2026-11-10T09:05:42Z`，临时本机测试服务在验证后停止。
+
+脚本在真实桌面进程仍运行时拒绝执行；测试前后核对真实 desktop manifest 字节相同。本节仅证明离线恢复路径，未修改已安装的 app.asar，也未声称已经修好 DSH 的热更新实现。真实 desktop 的恢复与验收另在对应 issue 记录。
