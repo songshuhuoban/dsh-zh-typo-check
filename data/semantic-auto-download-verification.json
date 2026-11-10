@@ -1,8 +1,8 @@
 {
-  "at_utc": "2026-11-10T13:54:20.609032+00:00",
+  "at_utc": "2026-11-10T14:03:01.406779+00:00",
   "version": "0.3.3",
-  "phase": "preflight",
-  "production_published": false,
+  "phase": "published",
+  "production_published": true,
   "tarball": {
     "filename": "dsh-zh-typo-check-0.3.3.tgz",
     "size": 1233586,
@@ -157,5 +157,378 @@
     "restored_auto_persisted": true,
     "screenshot": ".research/release-033/auto-default-ready.jpg"
   },
-  "user_desktop_modified": false
+  "user_desktop_modified": false,
+  "registry": {
+    "at_utc": "2026-11-10T13:58:29.533644+00:00",
+    "name": "dsh-zh-typo-check",
+    "version": "0.3.3",
+    "tags": {
+      "next": "0.3.0",
+      "latest": "0.3.3"
+    },
+    "source_commit": "0f6b7825938cda7788cdf81b09d59d61c7f77d0f",
+    "tarball": "https://registry.npmjs.org/dsh-zh-typo-check/-/dsh-zh-typo-check-0.3.3.tgz",
+    "bytes": 1233586,
+    "sha256": "885eff8318a976d5fac5c812d2060237fc779e9ddc553f967123f19a4330a258",
+    "shasum": "a1dfe5ba1361affb158281800d23cc4ca6be6cc3",
+    "integrity": "sha512-wX6OvU+hr0dp2666K+sJWbdsPugqfZYyNUN30Oxo6Ee3j2yL/qL1QvzxDOQ5Xmm9o9PghBCrRHqeHP0jLRrJlg==",
+    "registry_git_head": null,
+    "equals_preflight_bytes": true,
+    "files": [
+      {
+        "path": "LICENSE",
+        "bytes": 1070,
+        "sha256": "e175ea1864d96a6459487d108e9780faf4cd4f93da5b81c584e4cd60781e48a3",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "NOTICE",
+        "bytes": 933,
+        "sha256": "f491e04b24cb9efc3f2eb0bb0e6019995aad1f63874be9454af2002bc174a3bc",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "LICENSE-APACHE-2.0",
+        "bytes": 11358,
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "client.js",
+        "bytes": 115770,
+        "sha256": "bf2e92967c966433c67003fbd0f2f268127a159ca4734062eb84ffb163f72122",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "index.js",
+        "bytes": 7127,
+        "sha256": "d66c6d8f10e2419e4c68c417b714a43f43cbd929b978224f4ea9367982ec5116",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "locale/en.json",
+        "bytes": 149,
+        "sha256": "2fa2acd074b6a3f496f902b98087dfa4c4b2476bb43e194fc9ca8030abc0ea1b",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "package.json",
+        "bytes": 1660,
+        "sha256": "bd103974764150671b6e6375d2f812b6733ce68880f0092901c8939d1677b049",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "locale/zh.json",
+        "bytes": 137,
+        "sha256": "59a48be64a5b083ccd1bdf7ffcfe4806f96c64cf9c2d419da67753e65906f41e",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "MODEL-R13.md",
+        "bytes": 4602,
+        "sha256": "2e23143e5c65f4c1f9109979832f6c97b73a55123338aca19102a9594eb3181d",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "README.md",
+        "bytes": 5350,
+        "sha256": "6a04b8042854a65180d0506e77473ca4787496b169d99a0f83ccd480addaac84",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "checker.mjs",
+        "bytes": 6973,
+        "sha256": "482efb64cb0dc6d50ed20b66914e5b576fceba0f4604f51e55322a385bf5f69f",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "core.mjs",
+        "bytes": 21570,
+        "sha256": "5ffefa2c3311ab9af8a7a88220cea1447769ea73b1806b431e3cdc9d6c841368",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "infer.mjs",
+        "bytes": 6826,
+        "sha256": "43e96b8025e11fe5b68e58f1bcd7c77908c470231e3dc5d0e2d188615120b196",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "l1.mjs",
+        "bytes": 8563,
+        "sha256": "c03553e454860752dd5a99ac83e15ff3156da8d5510fd800c49d656e223ae7e1",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "lexicon.mjs",
+        "bytes": 3069,
+        "sha256": "b5daee9ec22d2ebcffafe74e326a77575df9a6ab035d452d7ca68ed391f7c403",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "model-process.mjs",
+        "bytes": 3207,
+        "sha256": "56d6b869c1b93e50a80c07474d5c42a7befffd556fffcd9a76e7e0acb5c5fbd3",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "model-service.mjs",
+        "bytes": 23874,
+        "sha256": "4c36f9af148eae48dec5c13ce34b41e19446e3a2abb1e4660308071b95d02d1d",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "model-worker.mjs",
+        "bytes": 1471,
+        "sha256": "6d22c42f6392cd4f08ef4aed2248f9687d2b7d37d729b5ebb0a2173e61353e7e",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "semantic-service.mjs",
+        "bytes": 8936,
+        "sha256": "2bccaeb6b243b0f932dd9200ef0e68a7a6d97e432e46ec62312f7332059deb1e",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "semantic-tokenizer.mjs",
+        "bytes": 2546,
+        "sha256": "4fcd5cd432be8fafa4f2afd40557c2e5dece46f9c376547cfab8a6ff02abf4ca",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "semantic.mjs",
+        "bytes": 3786,
+        "sha256": "4b6794d9e35b08dfc19c3cf95211a3822979a597cd256a96f37a5e482decad2b",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "tokenizer.mjs",
+        "bytes": 5810,
+        "sha256": "512ac8406727af3c8a84f665e1677b9c41d8a99493b59bc0b4f30aeccca3aa3d",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "icon.svg",
+        "bytes": 610,
+        "sha256": "1700b5797fb2fca639d5fc80336d337ad16e38ea73bcd73b8ade9a1a3483b819",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "data/l1-sounds.txt",
+        "bytes": 29012,
+        "sha256": "29ba22a0c9b260b1795729e8b7f109af9171794dafeaf8213463f613c8c47abe",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "data/l1-words.txt",
+        "bytes": 1930379,
+        "sha256": "b82d4c6a926a831923ea2fbd8cef5184bc4551c439b230867df025957daa6a52",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "data/semantic-r13-en.txt",
+        "bytes": 231508,
+        "sha256": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "data/semantic-r13-zh.txt",
+        "bytes": 109540,
+        "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c",
+        "source_matches_normalized_line_endings": true
+      },
+      {
+        "path": "cordis.patch.yml",
+        "bytes": 66,
+        "sha256": "828fa2a1cae000f008b67c9c4da17c28bff2a5dbb2ce170915336418b884516c",
+        "source_matches_normalized_line_endings": true
+      }
+    ]
+  },
+  "cold_install": {
+    "at_utc": "2026-11-10T14:00:14.365650+00:00",
+    "version": "0.3.3",
+    "installed_spec": "dsh-zh-typo-check@0.3.3",
+    "origin": "http://127.0.0.1:57733",
+    "isolated_profile": true,
+    "installed_files_match_registry": 28,
+    "candidate_source": false,
+    "download_endpoint": "/zh-typo-model/semantic/download",
+    "initial_state": {
+      "state": "absent",
+      "bytes": 0,
+      "total": 27092583,
+      "error": null,
+      "engine": "r13",
+      "runtime": true,
+      "runtimeVersion": "1.30.0",
+      "revision": 0
+    },
+    "final_state": {
+      "state": "ready",
+      "bytes": 27092583,
+      "total": 27092583,
+      "error": null,
+      "engine": "r13",
+      "source": "mirror",
+      "sourceChoice": "auto",
+      "attempt": 1,
+      "attempts": 2,
+      "runtime": true,
+      "runtimeVersion": "1.30.0",
+      "revision": 1
+    },
+    "download_seconds": 3.484,
+    "model_sha256": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+    "cases": [
+      {
+        "text": "这个方案有点危显是的管理开始地灵龛你看了",
+        "warning": true,
+        "score": 10.493962287902832
+      },
+      {
+        "text": "这个方案有点危险，我们需要再讨论一下。",
+        "warning": false,
+        "score": -15.490423202514648
+      },
+      {
+        "text": "请把 gRPC 的 keepalive 时间改为 30s。",
+        "warning": false,
+        "score": -9.164060592651367
+      },
+      {
+        "text": "That is not what I was asking for.",
+        "warning": false,
+        "score": -21.913278579711914
+      }
+    ],
+    "progress": [
+      {
+        "state": "downloading",
+        "bytes": 0,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 1604255,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 4356767,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 6994591,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 9583263,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 12368543,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 15039135,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 18004639,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 21068447,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 23149215,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 26049183,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "ready",
+        "bytes": 27092583,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      }
+    ],
+    "user_desktop_modified": false
+  },
+  "github_release": {
+    "url": "https://github.com/songshuhuoban/dsh-zh-typo-check/releases/tag/v0.3.3",
+    "published_at": "2026-11-10T14:01:10Z",
+    "target_commitish": "0f6b7825938cda7788cdf81b09d59d61c7f77d0f",
+    "tag": "v0.3.3",
+    "assets": [
+      {
+        "name": "dsh-zh-typo-check-0.3.3.tgz",
+        "bytes": 1233586,
+        "sha256": "885eff8318a976d5fac5c812d2060237fc779e9ddc553f967123f19a4330a258",
+        "url": "https://github.com/songshuhuoban/dsh-zh-typo-check/releases/download/v0.3.3/dsh-zh-typo-check-0.3.3.tgz",
+        "matches_local": true
+      },
+      {
+        "name": "repair-upgrade.ps1",
+        "bytes": 5733,
+        "sha256": "488fc85b69c188c41abdd6bba3c61e41612f87eaf8280e3970fc93f2ce474b7c",
+        "url": "https://github.com/songshuhuoban/dsh-zh-typo-check/releases/download/v0.3.3/repair-upgrade.ps1",
+        "matches_local": true
+      },
+      {
+        "name": "upgrade-recovery.md",
+        "bytes": 3635,
+        "sha256": "acf5b30f897ad2a31837ac82bf7c73b41c3b5945e99a6e5cba44c9cf21e640bd",
+        "url": "https://github.com/songshuhuoban/dsh-zh-typo-check/releases/download/v0.3.3/upgrade-recovery.md",
+        "matches_local": true
+      }
+    ]
+  }
 }
