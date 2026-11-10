@@ -26,6 +26,22 @@
 
 本轮实际 UI 验收沿用现有视觉样式；用户明确调整为本任务无需 OpenPencil。公开 registry 安装、最终发布版本与入口将追加在本文件，首轮本地包验收不冒充 registry 安装。
 
+## 公开 registry 安装与重启
+
+2026-11-10 完成：npm CLI 经用户浏览器双重验证发布 `dsh-zh-typo-check@0.3.0` 到 `next`，在官方 registry 可查询后，从全新 profile 的插件页输入精确版本安装。默认安装源下实际经历“需要允许安装脚本 → 允许 onnxruntime-node@1.30.0 并重试 → 已安装 → 立即启用”，整个流程通过。
+
+registry 压缩包 1,232,132 字节，SHA-1 `3a15b47cabf51547aa11cb99d130e87dbf101db9`；SHA-512 integrity 与 registry 元数据一致，25 个文件逐字节匹配发布候选。registry `gitHead` 为 `58664c60c6695ceb59bd66745ef4b2f5fa97e3ac`；安装后再逐文件核对，完全一致。
+
+通过设置卡片从默认公开 Release 下载 R13，未安装可选错字模型。重启宿主、换端口后再次验证：
+
+- 验证时间：`2026-11-10T08:34:04.567254+00:00`；本机验收入口 `http://127.0.0.1:63801/`，需要当前浏览器认证。
+- 0.3.0 与 Native ORT 1.30.0；整句模型 27,092,583 字节、SHA-256 与冻结值一致；可选错字模型保持 absent。
+- 原始问题句 warning=true、margin=13.770684242248535；正常 gRPC 混排及英文对照 warning=false；超长输入 warning=null，无截断判断。
+- 实际输入框再次显示蓝色虚线与“整句意思可能不连贯”气泡，仅有忽略；未发送聊天消息。
+- 实际 screenshot 与接口核对记录分别为本地 `.research/r13-product/registry-original-warning.png`、`registry-smoke.json`、`registry-verification.json`。
+
+正式默认标签的提升属于 npm 单独的双重验证操作；最终标签与源码合并记录随发布完成追加。已结束首轮本地压缩包宿主，保留此 registry 版本验收环境。
+
 ## 自动验证
 
 `npm test`、`npm run config:test`、`npm run model:test`、`npm run infer:test`、`npm run resilience`、`npm run semantic:test` 通过。整句测试使用真实固定权重，覆盖下载、错误、取消、删除、整句/错字独立路由、超长弃权与 profile 隔离。
