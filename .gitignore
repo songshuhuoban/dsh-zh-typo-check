@@ -10,6 +10,7 @@ node_modules/
 .acl-recovery/
 .research/
 .tmp-*/
+__pycache__/
 
 # 编辑器与系统
 .vscode/

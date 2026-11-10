@@ -1,0 +1,20 @@
+R13 whole-input anomaly detector and vocabularies
+
+Derived from hfl/chinese-electra-180g-small-discriminator,
+HIT and iFLYTEK Research (HFL), revision
+826a243f3f387450ef8d70de9c3d0706d8d8e924.
+https://huggingface.co/hfl/chinese-electra-180g-small-discriminator
+Chinese ELECTRA: https://github.com/ymcui/Chinese-ELECTRA
+
+Derived from google/electra-small-discriminator,
+Google Research ELECTRA, revision
+fa8239aadc095e9164941d05878b98afe9b953c3.
+https://huggingface.co/google/electra-small-discriminator
+ELECTRA: https://github.com/google-research/electra
+
+Both upstream model cards specify Apache License 2.0.
+The bundled Chinese and English vocabulary files are unchanged copies.
+Modifications for R13 (2026-11-10): task fine-tuning of encoders/head,
+dual-encoder ONNX export and INT8 quantization. See MODEL-R13.md.
+The plugin source is separately licensed under MIT.
+This notice does not change the licenses of original datasets.
