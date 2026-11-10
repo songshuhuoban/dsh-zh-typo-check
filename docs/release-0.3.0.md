@@ -42,13 +42,19 @@ registry 压缩包 1,232,132 字节，SHA-1 `3a15b47cabf51547aa11cb99d130e87dbf1
 
 正式默认标签的提升属于 npm 单独的双重验证操作；最终标签与源码合并记录随发布完成追加。已结束首轮本地压缩包宿主，保留此 registry 版本验收环境。
 
-## 发布检查点
+## 初始发布检查点
 
 PR [#1](https://github.com/songshuhuoban/dsh-zh-typo-check/pull/1) 已合并，main 合并提交 `8d833cf53d45c6c14066fa6a0aea7dd173c7efc4`；[GitHub v0.3.0](https://github.com/songshuhuoban/dsh-zh-typo-check/releases/tag/v0.3.0) 已公开发布。
 
 此检查点 **next=0.3.0、latest=0.2.3**。0.3.0 上传已完成，但提升默认标签时 npm 再次要求独立浏览器 2FA；该次链接已过期，操作未完成。现在可直接安装 `dsh-zh-typo-check@0.3.0`。恢复时重新发起 `npm dist-tag add dsh-zh-typo-check@0.3.0 latest --registry=https://registry.npmjs.org --auth-type=web`，由用户在新页面完成验证，再查询标签并更新此检查点；不能重用过期链接或把 next 发布冒充默认版本已更新。
 
 可机读核对入口：`data/release-0.3.0-verification.json`。工程交付进入待产品验收，尚不代表用户已完成产品验收。
+
+## 正式发布完成
+
+2026-11-10，用户在新页面完成 npm 双重验证，命令返回 `+latest: dsh-zh-typo-check@0.3.0`，随后官方 registry 确认 **latest=0.3.0、next=0.3.0**。默认安装已指向新版本，前述待提升状态为历史检查点，已解除。
+
+提交、推送、主分支合并、模型与插件公开发布、registry 冷安装及重启冒烟均已完成。运行时代码仍是 npm gitHead `58664c60c6695ceb59bd66745ef4b2f5fa97e3ac`，后续提交仅补充交付记录；未修改已发布 npm 制品。SIM-1051 进入待产品验收，未将模型选型确认冒充完整产品验收。
 
 ## 自动验证
 

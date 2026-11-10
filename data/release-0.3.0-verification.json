@@ -1,9 +1,9 @@
 {
-  "recorded_at_utc": "2026-11-10T08:41:30.166403+00:00",
-  "status": "published-next-latest-promotion-needs-new-npm-2fa",
+  "recorded_at_utc": "2026-11-10T08:44:39.886970+00:00",
+  "status": "published-latest-product-review-pending",
   "version": "0.3.0",
   "dist_tags": {
-    "latest": "0.2.3",
+    "latest": "0.3.0",
     "next": "0.3.0"
   },
   "source_commit": "58664c60c6695ceb59bd66745ef4b2f5fa97e3ac",
@@ -67,5 +67,5 @@
     "original warning without automatic rewrite"
   ],
   "product_acceptance": "engineering checks passed; user product acceptance pending",
-  "remaining": "npm latest dist-tag needs a fresh user-completed 2FA flow; expired links must not be reused"
+  "remaining": "User product acceptance; engineering implementation, publication and staging verification are complete"
 }
