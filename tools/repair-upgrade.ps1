@@ -4,7 +4,7 @@
 param(
     [string]$ProfileDirectory = (Join-Path ([Environment]::GetFolderPath('UserProfile')) '.dsh/profiles/desktop'),
     [string]$DshCli = 'D:\deepseek-harness\resources\runtime\cli\bin\dsh.cmd',
-    [ValidatePattern('^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$')][string]$Version = '0.3.0',
+    [ValidatePattern('^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$')][string]$Version = '0.3.1',
     [switch]$PlanOnly
 )
 $ErrorActionPreference = 'Stop'
