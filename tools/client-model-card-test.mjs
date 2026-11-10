@@ -8,7 +8,7 @@ const marker = "    return {\n      inject: ['slots', 'locale'],"
 assert.equal(source.split(marker).length, 2)
 const flush = () => new Promise(resolve => setImmediate(resolve))
 function harness(responses) {
-  const slots = [], effects = [], timers = new Map()
+  const slots = [], effects = [], timers = new Map(), urls = []
   let position = 0, timerId = 0, entry, calls = 0
   const react = {
     useState(initial) {
@@ -39,6 +39,7 @@ function harness(responses) {
   const sandbox = { window, URL, URLSearchParams, location: { pathname: '/' },
     fetch: async url => {
       if (url.includes('/log?')) return {}
+      urls.push(url)
       calls += 1
       const next = responses.shift() || { ok: false }
       return { ok: next.ok, status: next.ok ? 200 : 503, json: async () => next.body }
@@ -47,7 +48,7 @@ function harness(responses) {
   vm.runInNewContext(source.replace(marker, "    return { test: { ModelCard, configSettings, STRINGS },\n      inject: ['slots', 'locale'],"), sandbox)
   const api = entry.factory(() => react).test
   return {
-    ...api, timers, calls: () => calls,
+    ...api, timers, urls, calls: () => calls,
     render() {
       position = 0
       const tree = api.ModelCard({ sentence: true, prefs: api.configSettings.get(), t: key => api.STRINGS.zh[key] || key })
@@ -67,6 +68,21 @@ function nodes(tree) {
 }
 const text = tree => nodes(tree).flatMap(node => node.children.filter(child => typeof child === 'string')).join(' ')
 const ready = { ok: true, body: { state: 'ready', bytes: 27092583, total: 27092583, runtime: true } }
+for (const choice of ['auto', 'mirror', 'official', 'custom']) {
+  const h = harness([{ ok: true, body: { state: 'absent' } }, { ok: true, body: { state: 'downloading', source: choice === 'auto' ? 'mirror' : choice } }])
+  h.configSettings.set({ sentenceSource: choice, sentenceCustomBase: 'https://example.test/r13' })
+  h.render(); await flush()
+  const tree = h.render(), select = nodes(tree).find(node => node.type === 'select')
+  assert.deepEqual(Array.from(nodes(select).filter(node => node.type === 'option'), node => node.props.value), ['auto', 'mirror', 'official', 'custom'])
+  assert.equal(select.props.value, choice)
+  const download = nodes(tree).find(node => node.type === 'button' && text(node) === h.STRINGS.zh.download)
+  assert.ok(download)
+  await download.props.onClick()
+  const url = new URL(h.urls.find(url => url.includes('/download')), 'http://localhost')
+  assert.equal(url.searchParams.get('source'), choice, 'actual client action sends selected sentence source')
+  assert.equal(url.searchParams.get('base'), choice === 'custom' ? 'https://example.test/r13' : null)
+  assert.ok(text(h.render()).includes(choice === 'auto' || choice === 'mirror' ? '魔搭（国内）' : choice === 'official' ? 'GitHub（官方）' : '自定义'))
+}
 {
   const h = harness([{ ok: false }, ready])
   h.render(); await flush()
@@ -109,4 +125,4 @@ const ready = { ok: true, body: { state: 'ready', bytes: 27092583, total: 270925
   assert.equal(input.props['aria-invalid'], true)
   assert.equal(input.props.disabled, undefined)
 }
-console.log('PASS  model status retry/recovery, manual refresh, blur saving and failed-draft preservation')
+console.log('PASS  source choices/actions, model status retry/recovery, manual refresh, blur saving and failed-draft preservation')

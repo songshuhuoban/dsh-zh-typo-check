@@ -1,0 +1,159 @@
+{
+  "issue": "SIM-1056",
+  "recorded_at_utc": "2026-11-10T13:29:01.784061+00:00",
+  "status": "public-mirror-and-existing-plugin-download-verified-product-review-pending",
+  "repository_url": "https://modelscope.cn/models/SimoneWang/dsh-input-anomaly-r13-int8",
+  "model_release_id": "r13-20261110",
+  "modelscope_revision": "r13-261110",
+  "modelscope_commit": "bfd5c5dd1293c64b1ea3ad517e8398bd3ee40f2b",
+  "custom_base": "https://modelscope.cn/models/SimoneWang/dsh-input-anomaly-r13-int8/resolve/r13-261110",
+  "model_sha256": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+  "public_download": {
+    "at_utc": "2026-11-10T13:25:29.537434+00:00",
+    "repository": "SimoneWang/dsh-input-anomaly-r13-int8",
+    "revision": "r13-261110",
+    "commit": "bfd5c5dd1293c64b1ea3ad517e8398bd3ee40f2b",
+    "base_url": "https://modelscope.cn/models/SimoneWang/dsh-input-anomaly-r13-int8/resolve/r13-261110",
+    "anonymous": true,
+    "all_files_byte_identical": true,
+    "files": [
+      {
+        "file": "semantic-r13-int8.onnx",
+        "bytes": 27092583,
+        "sha256": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+        "seconds": 4.312,
+        "http_version": 11,
+        "authenticated": false
+      },
+      {
+        "file": "semantic-r13-zh.txt",
+        "bytes": 109540,
+        "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c",
+        "seconds": 1.5,
+        "http_version": 11,
+        "authenticated": false
+      },
+      {
+        "file": "semantic-r13-en.txt",
+        "bytes": 231508,
+        "sha256": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3",
+        "seconds": 0.844,
+        "http_version": 11,
+        "authenticated": false
+      },
+      {
+        "file": "LICENSE",
+        "bytes": 11358,
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "seconds": 1.407,
+        "http_version": 11,
+        "authenticated": false
+      },
+      {
+        "file": "LICENSE-APACHE-2.0",
+        "bytes": 11358,
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "seconds": 1.468,
+        "http_version": 11,
+        "authenticated": false
+      },
+      {
+        "file": "NOTICE",
+        "bytes": 933,
+        "sha256": "f491e04b24cb9efc3f2eb0bb0e6019995aad1f63874be9454af2002bc174a3bc",
+        "seconds": 2.016,
+        "http_version": 11,
+        "authenticated": false
+      },
+      {
+        "file": "MODEL-R13.md",
+        "bytes": 4602,
+        "sha256": "2e23143e5c65f4c1f9109979832f6c97b73a55123338aca19102a9594eb3181d",
+        "seconds": 1.625,
+        "http_version": 11,
+        "authenticated": false
+      },
+      {
+        "file": "README.md",
+        "bytes": 3086,
+        "sha256": "bc45d650e5059bebbf3da945d4b04815a64f7151d43f789a61c633c00d755c8e",
+        "seconds": 1.187,
+        "http_version": 11,
+        "authenticated": false
+      },
+      {
+        "file": "configuration.json",
+        "bytes": 59,
+        "sha256": "d08ae8ce0fa8d423e25b5f64302b55e83eeb923beab24d48d7427eaf3e1d9662",
+        "seconds": 1.25,
+        "http_version": 11,
+        "authenticated": false
+      },
+      {
+        "file": ".gitattributes",
+        "bytes": 55,
+        "sha256": "cdb97a450eb93edee46746ecf6e5b9457f94bc38bfcc1968b3e305c0d0959679",
+        "seconds": 1.516,
+        "http_version": 11,
+        "authenticated": false
+      },
+      {
+        "file": "manifest.json",
+        "bytes": 2102,
+        "sha256": "0f55bd5f23349d2c9907c0c6b90665e01937e314c7d8f0a40c3b74304eb282fd",
+        "seconds": 0.578,
+        "http_version": 11,
+        "authenticated": false
+      }
+    ]
+  },
+  "existing_plugin": {
+    "at_utc": "2026-11-10T13:27:14.653768+00:00",
+    "version": "0.3.2",
+    "origin": "http://127.0.0.1:61345",
+    "isolated_profile": true,
+    "custom_base": "https://modelscope.cn/models/SimoneWang/dsh-input-anomaly-r13-int8/resolve/r13-261110",
+    "accepted_state": "downloading",
+    "final_state": {
+      "state": "ready",
+      "bytes": 27092583,
+      "total": 27092583,
+      "error": null,
+      "engine": "r13",
+      "runtime": true,
+      "runtimeVersion": "1.30.0",
+      "revision": 1
+    },
+    "download_seconds": 3.813,
+    "sha256": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+    "cases": [
+      {
+        "text": "这个方案有点危显是的管理开始地灵龛你看了",
+        "warning": true,
+        "score": 10.493962287902832
+      },
+      {
+        "text": "这个方案有点危险，我们需要再讨论一下。",
+        "warning": false,
+        "score": -15.490423202514648
+      },
+      {
+        "text": "请把 gRPC 的 keepalive 时间改为 30s。",
+        "warning": false,
+        "score": -9.164060592651367
+      },
+      {
+        "text": "That is not what I was asking for.",
+        "warning": false,
+        "score": -21.913278579711914
+      }
+    ],
+    "user_desktop_modified": false
+  },
+  "application_runtime_changed": false,
+  "npm_release_needed_to_use_custom_source": false,
+  "source_script_commit": "1bb0a94",
+  "prepared_files": 11,
+  "prepared_bytes": 27467184,
+  "user_desktop_modified": false
+}

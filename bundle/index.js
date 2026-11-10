@@ -34,7 +34,7 @@ export const Config = z.object({
   source: live(z.union([z.const('auto'), z.const('mirror'), z.const('official'), z.const('custom')]).default('auto')
     .description('Preferred typo model download source.')),
   customBase: live(z.string().default('').description('Custom typo model download base URL (http/https).')),
-  sentenceSource: live(z.union([z.const('official'), z.const('custom')]).default('official')
+  sentenceSource: live(z.union([z.const('auto'), z.const('mirror'), z.const('official'), z.const('custom')]).default('auto')
     .description('Preferred whole-sentence model download source.')),
   sentenceCustomBase: live(z.string().default('').description('Custom whole-sentence model download base URL (http/https).')),
 })

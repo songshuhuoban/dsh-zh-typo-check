@@ -1,0 +1,161 @@
+{
+  "at_utc": "2026-11-10T13:54:20.609032+00:00",
+  "version": "0.3.3",
+  "phase": "preflight",
+  "production_published": false,
+  "tarball": {
+    "filename": "dsh-zh-typo-check-0.3.3.tgz",
+    "size": 1233586,
+    "unpackedSize": 2545902,
+    "shasum": "a1dfe5ba1361affb158281800d23cc4ca6be6cc3",
+    "integrity": "sha512-wX6OvU+hr0dp2666K+sJWbdsPugqfZYyNUN30Oxo6Ee3j2yL/qL1QvzxDOQ5Xmm9o9PghBCrRHqeHP0jLRrJlg==",
+    "entryCount": 28,
+    "sha256": "885eff8318a976d5fac5c812d2060237fc779e9ddc553f967123f19a4330a258"
+  },
+  "checks": {
+    "npm_test": "passed",
+    "semantic_test": "passed",
+    "dsh_bundled_electron_download_matrix": "passed",
+    "git_diff_check": "passed"
+  },
+  "policy": {
+    "default": "auto",
+    "order": [
+      "mirror",
+      "official"
+    ],
+    "connect_timeout_ms": 8000,
+    "idle_timeout_ms": 15000,
+    "geoip_lookup": false,
+    "manual_choices_fallback": false,
+    "model_weights_changed": false
+  },
+  "preflight": {
+    "at_utc": "2026-11-10T13:51:37.460648+00:00",
+    "version": "0.3.3",
+    "origin": "http://127.0.0.1:60144",
+    "isolated_profile": true,
+    "download_started_by": "actual settings card default auto button",
+    "initial_state": {
+      "state": "absent",
+      "bytes": 0,
+      "total": 27092583,
+      "error": null,
+      "engine": "r13",
+      "runtime": true,
+      "runtimeVersion": "1.30.0",
+      "revision": 0
+    },
+    "final_state": {
+      "state": "ready",
+      "bytes": 27092583,
+      "total": 27092583,
+      "error": null,
+      "engine": "r13",
+      "source": "mirror",
+      "sourceChoice": "auto",
+      "attempt": 1,
+      "attempts": 2,
+      "runtime": true,
+      "runtimeVersion": "1.30.0",
+      "revision": 1
+    },
+    "sha256": "da4505f9ff00fbdb26aa359b2089a32f4ae6efb56c6e03e275a489d5f1fe1cda",
+    "cases": [
+      {
+        "text": "这个方案有点危显是的管理开始地灵龛你看了",
+        "warning": true,
+        "score": 10.493962287902832
+      },
+      {
+        "text": "这个方案有点危险，我们需要再讨论一下。",
+        "warning": false,
+        "score": -15.490423202514648
+      },
+      {
+        "text": "请把 gRPC 的 keepalive 时间改为 30s。",
+        "warning": false,
+        "score": -9.164060592651367
+      },
+      {
+        "text": "That is not what I was asking for.",
+        "warning": false,
+        "score": -21.913278579711914
+      }
+    ],
+    "progress": [
+      {
+        "state": "absent",
+        "bytes": 0,
+        "sourceChoice": null,
+        "source": null,
+        "attempt": null,
+        "attempts": null
+      },
+      {
+        "state": "downloading",
+        "bytes": 0,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 2095792,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 6617776,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 11516592,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 16546480,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "downloading",
+        "bytes": 21854896,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      },
+      {
+        "state": "ready",
+        "bytes": 27092583,
+        "sourceChoice": "auto",
+        "source": "mirror",
+        "attempt": 1,
+        "attempts": 2
+      }
+    ],
+    "user_desktop_modified": false
+  },
+  "ui": {
+    "actual_default_download_click": true,
+    "manual_official_survives_reload": true,
+    "restored_auto_persisted": true,
+    "screenshot": ".research/release-033/auto-default-ready.jpg"
+  },
+  "user_desktop_modified": false
+}

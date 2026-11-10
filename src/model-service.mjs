@@ -407,8 +407,10 @@ export async function resource(request) {
       if (action === 'status') return json(await service.status())
       if (action === 'download') {
         const base = url.searchParams.get('base') ?? ''
-        if (base && normalizeBase(base) === null) return json({ error: '下载地址需要 http:// 或 https://' }, 400)
-        await service.beginDownload(base)
+        const source = url.searchParams.get('source') ?? (base ? 'custom' : 'auto')
+        if (!['auto', 'mirror', 'official', 'custom'].includes(source)) return json({ error: '未知的下载来源' }, 400)
+        if (source === 'custom' && normalizeBase(base) === null) return json({ error: '下载地址需要 http:// 或 https://' }, 400)
+        await service.beginDownload({ source, customBase: base })
         return json(await service.status(), 202)
       }
       if (action === 'cancel') return json(await service.cancel())

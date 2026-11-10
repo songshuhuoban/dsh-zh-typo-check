@@ -73,6 +73,9 @@ try {
     return { status: response.status, body: await response.json() }
   }
   assert.equal((await call('semantic/status')).body.state, 'absent')
+  assert.equal((await call('semantic/download?source=unknown')).status, 400)
+  assert.equal((await call('semantic/download?source=custom')).status, 400)
+  assert.equal((await call('semantic/download?source=custom&base=file:///bad')).status, 400)
   assert.equal((await call('semantic/download')).status, 202)
   for (let i = 0; i < 200 && (await call('semantic/status')).body.state !== 'ready'; i++) await new Promise(resolve => setTimeout(resolve, 25))
   assert.equal((await call('semantic/status')).body.state, 'ready')

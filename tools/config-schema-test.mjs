@@ -61,7 +61,11 @@ expect('默认值与客户端 DEFAULT_SETTINGS 一致', defaults, { ...DEFAULT_S
 // ---- 2. 非法值被拒绝（避免被设置服务写进 profile patch）----
 expectThrows('拒绝非法灵敏度', () => Config({ sensitivity: 'extreme' }))
 expectThrows('拒绝非法下载来源', () => Config({ source: 'ftp' }))
-expectThrows('整句来源不接受错字镜像枚举', () => Config({ sentenceSource: 'mirror' }))
+expectThrows('拒绝非法整句来源', () => Config({ sentenceSource: 'ftp' }))
+for (const source of ['auto', 'mirror', 'official', 'custom']) {
+  const parsed = Config({ sentenceSource: source }).sentenceSource
+  expect('接受整句来源 ' + source, parsed?.get?.() ?? parsed, source)
+}
 expectThrows('拒绝非字符串整句地址', () => Config({ sentenceCustomBase: 42 }))
 expectThrows('拒绝非布尔开关', () => Config({ enabled: 'yes' }))
 expectThrows('拒绝非字符串自定义地址', () => Config({ customBase: 42 }))
