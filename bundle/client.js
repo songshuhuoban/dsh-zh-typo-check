@@ -612,7 +612,7 @@ window.__ModuleLoader__.load({
       sensitivity: 'normal',
       source: 'auto',
       customBase: '',
-      sentenceSource: 'official',
+      sentenceSource: 'auto',
       sentenceCustomBase: '',
     })
 
@@ -636,8 +636,8 @@ window.__ModuleLoader__.load({
       if (SOURCE_LEVELS.includes(raw.source)) next.source = raw.source
       if (typeof raw.customBase === 'string') next.customBase = raw.customBase
       // 旧版自定义地址同时用于两套模型。缺少新字段时沿用，避免升级切换下载地址。
-      next.sentenceSource = ['official', 'custom'].includes(raw.sentenceSource)
-        ? raw.sentenceSource : next.source === 'custom' ? 'custom' : 'official'
+      next.sentenceSource = SOURCE_LEVELS.includes(raw.sentenceSource)
+        ? raw.sentenceSource : next.source === 'custom' ? 'custom' : 'auto'
       next.sentenceCustomBase = typeof raw.sentenceCustomBase === 'string'
         ? raw.sentenceCustomBase : next.source === 'custom' ? next.customBase : ''
       return next
@@ -1149,6 +1149,8 @@ window.__ModuleLoader__.load({
         customBaseLabel: '自定义下载地址',
         sentencePlaceholder: 'https://你的镜像/semantic-r13',
         sourceGitHub: 'GitHub（官方）',
+        sourceModelScope: '魔搭（国内）',
+        sentenceAuto: '自动（国内优先）',
         sentencePaused: '已暂停（整句异常）',
         sourceAuto: '自动',
         sourceMirror: '国内镜像',
@@ -1213,6 +1215,8 @@ window.__ModuleLoader__.load({
         customBaseLabel: 'Custom download URL',
         sentencePlaceholder: 'https://your-mirror/semantic-r13',
         sourceGitHub: 'GitHub (official)',
+        sourceModelScope: 'ModelScope (China)',
+        sentenceAuto: 'Auto (China first)',
         sentencePaused: 'paused (incoherent sentence)',
         sourceAuto: 'Auto',
         sourceMirror: 'China mirror',
@@ -2271,7 +2275,7 @@ window.__ModuleLoader__.load({
           if (action === 'download') {
             const source = configSettings.get()[sourceKey]
             const query = new URLSearchParams()
-            if (!sentence) query.set('source', source)
+            query.set('source', source)
             if (source === 'custom') query.set('base', baseRef.current.trim())
             if (query.size > 0) url += '?' + query
           }
@@ -2286,12 +2290,15 @@ window.__ModuleLoader__.load({
       const downloading = state === 'downloading' || state === 'verifying'
       const runtimeMissing = state === 'ready' && status.runtime === false
       const progress = status?.total > 0 ? Math.min(1, status.bytes / status.total) : 0
-      const stateText = pollError ? t('stateUnavailable') : runtimeMissing ? t('semanticRuntime') : state === 'ready'
+      let stateText = pollError ? t('stateUnavailable') : runtimeMissing ? t('semanticRuntime') : state === 'ready'
         ? !prefs.enabled ? t('semanticGlobalOff') : prefs[enabledKey] ? t('semanticReady') : t('semanticDisabled')
         : state === 'verifying' ? t('stateVerifying') : state === 'downloading'
           ? format(t('stateDownloading'), { percent: Math.round(100 * progress) })
           : state === 'partial' ? t('statePartial') : state === 'error' ? t('stateFailed')
             : state === 'unknown' ? pollError ? t('stateUnavailable') : t('stateChecking') : t('stateAbsent')
+      if (sentence && downloading && status?.source && !pollError) {
+        stateText += ' · ' + t(status.source === 'mirror' ? 'sourceModelScope' : status.source === 'official' ? 'sourceGitHub' : 'sourceCustom')
+      }
       const valid = isValidBase(baseDraft)
       const saveFailed = settingsError?.code === 'write-failed' && settingsError.fields.includes(baseKey)
       const removeLabel = t(sentence ? 'semanticRemove' : 'typoRemove')
@@ -2343,8 +2350,8 @@ window.__ModuleLoader__.load({
             React.createElement('label', { key: 'label', htmlFor: id + '-source' }, t('optSourceLabel')),
             React.createElement('select', { key: 'select', id: id + '-source', className: 'zh-check-select', value: prefs[sourceKey],
               onChange: event => settingsStore.set({ [sourceKey]: event.target.value }) },
-            (sentence ? ['official', 'custom'] : ['auto', 'mirror', 'official', 'custom']).map(value => React.createElement('option', { key: value, value },
-              t(value === 'auto' ? 'sourceAuto' : value === 'mirror' ? 'sourceMirror' : value === 'official' ? sentence ? 'sourceGitHub' : 'sourceOfficial' : 'sourceCustom')))),
+            ['auto', 'mirror', 'official', 'custom'].map(value => React.createElement('option', { key: value, value },
+              t(value === 'auto' ? sentence ? 'sentenceAuto' : 'sourceAuto' : value === 'mirror' ? sentence ? 'sourceModelScope' : 'sourceMirror' : value === 'official' ? sentence ? 'sourceGitHub' : 'sourceOfficial' : 'sourceCustom')))),
           ]),
           prefs[sourceKey] === 'custom' ? React.createElement('div', { key: 'base', className: 'zh-check-url-row' }, [
             React.createElement('label', { key: 'label', htmlFor: id + '-base' }, t('customBaseLabel')),

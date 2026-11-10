@@ -93,7 +93,7 @@ Windows 包移除还必须通过 `tools/dsh-upgrade-smoke.py` 的真实官方 CL
 
 ## 配置持久化
 
-R13 整句检查（0.3.0）由 `src/semantic-tokenizer.mjs`、`semantic.mjs`、`semantic-service.mjs` 负责双分词器、固定 Native ORT 1.30.0 推理与 profile 内模型生命周期。构建复制两个不变词表；27 MB 权重通过 GitHub Release 分发，SHA-256 固定在源码中。不可直接替换模型、运行时或阈值，三者必须一起验证。
+R13 整句检查（0.3.0）由 `src/semantic-tokenizer.mjs`、`semantic.mjs`、`semantic-service.mjs` 负责双分词器、固定 Native ORT 1.30.0 推理与 profile 内模型生命周期。构建复制两个不变词表；27 MB 权重通过固定魔搭版本和 GitHub Release 分发，SHA-256 固定在源码中。0.3.3 默认国内优先自动下载，连接/停滞超时或校验失败后回退，手动来源不切换。不可直接替换模型、运行时或阈值，三者必须一起验证。
 
 `/zh-typo-model/check` 的 `typo=0|1` 与 `sentence=0|1` 独立控制两种模型。整句无效结果为 `semantic.warning: null`，有效结果为布尔值。超过任一编码器 128 token 不截断。原 MLM 的平均分不再用于整句判断。两种模型安装与删除分别使客户端缓存失效，当前草稿会重查。
 

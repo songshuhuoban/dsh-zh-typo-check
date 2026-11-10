@@ -118,6 +118,10 @@ expect('坏 JSON 不抛、返回 null', parseSettingsJson('{oops'), null)
 expect('旧版缺 fluency 时补默认值', normalizeSettings({ enabled: false }).fluency, DEFAULT_SETTINGS.fluency)
 expect('非法灵敏度退回默认', normalizeSettings({ sensitivity: 'extreme' }).sensitivity, 'normal')
 expect('非法来源退回默认', normalizeSettings({ source: 'ftp' }).source, 'auto')
+expect('旧版缺少整句来源时使用国内优先自动模式', normalizeSettings({ source: 'official' }).sentenceSource, 'auto')
+for (const source of ['auto', 'mirror', 'official', 'custom']) {
+  expect('保留整句来源 ' + source, normalizeSettings({ sentenceSource: source }).sentenceSource, source)
+}
 expect('自定义地址保留字符串', normalizeSettings({ customBase: ' https://mirror/base ' }).customBase, ' https://mirror/base ')
 expect('非对象输入整体退回默认', normalizeSettings('nope'), { ...DEFAULT_SETTINGS })
 

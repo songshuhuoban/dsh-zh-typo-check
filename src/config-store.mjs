@@ -38,7 +38,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   sensitivity: 'normal',
   source: 'auto',
   customBase: '',
-  sentenceSource: 'official',
+  sentenceSource: 'auto',
   sentenceCustomBase: '',
 })
 
@@ -62,8 +62,8 @@ export function normalizeSettings(raw) {
   if (SOURCE_LEVELS.includes(raw.source)) next.source = raw.source
   if (typeof raw.customBase === 'string') next.customBase = raw.customBase
   // 旧版自定义地址同时用于两套模型。缺少新字段时沿用，避免升级切换下载地址。
-  next.sentenceSource = ['official', 'custom'].includes(raw.sentenceSource)
-    ? raw.sentenceSource : next.source === 'custom' ? 'custom' : 'official'
+  next.sentenceSource = SOURCE_LEVELS.includes(raw.sentenceSource)
+    ? raw.sentenceSource : next.source === 'custom' ? 'custom' : 'auto'
   next.sentenceCustomBase = typeof raw.sentenceCustomBase === 'string'
     ? raw.sentenceCustomBase : next.source === 'custom' ? next.customBase : ''
   return next
